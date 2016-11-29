@@ -7,5 +7,5 @@
 (in-package #:cl-user)
 (defpackage #:lionchat
   (:nicknames #:org.shirakumo.lichat.lionchat)
-  (:use #:cl)
+  (:use #:cl+qt)
   )

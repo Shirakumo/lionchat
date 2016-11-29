@@ -5,6 +5,7 @@
 |#
 
 (in-package #:org.shirakumo.lichat.lionchat)
+(in-readtable :qtools)
 
 (define-widget chat-area (QWidget)
   ())
@@ -16,7 +17,7 @@
     (make-instance 'chat-input))
 
 (define-subwidget (chat-area send)
-    (q+:make-qpushbutton "Send" chat-area))
+    (q+:make-qpushbutton "Send"))
 
 (define-subwidget (chat-area layout)
     (q+:make-qgridlayout chat-area)

@@ -20,6 +20,8 @@
                (:file "main"))
   :depends-on (:lichat
                :qtools
+               :qtcore
+               :qtgui
                :bordeaux-threads
                :documentation-utils
                :verbose))

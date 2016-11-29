@@ -5,13 +5,14 @@
 |#
 
 (in-package #:org.shirakumo.lichat.lionchat)
+(in-readtable :qtools)
 
 (define-widget main (QMainWindow)
   ())
 
 (define-subwidget (main channel-list)
     (make-instance 'channel-list)
-  (q+:add-dock-widget main channel-list (q+:qmainwindow.left-dock-widget-area)))
+  (q+:add-dock-widget main (q+:qt.left-dock-widget-area) channel-list))
 
 (define-subwidget (main chat-area)
     (make-instance 'chat-area)

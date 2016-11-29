@@ -5,6 +5,7 @@
 |#
 
 (in-package #:org.shirakumo.lichat.lionchat)
+(in-readtable :qtools)
 
 (define-widget connect (QDialog)
   ())
@@ -19,33 +20,33 @@
     (q+:make-qlineedit connect))
 
 (define-subwidget (connect port)
-    (q+:make-qspinbox lichat:*default-port* connect)
+    (q+:make-qspinbox lichat:*default-port*)
   (setf (q+:minimum port) 1)
   (setf (q+:maximum port) 65535))
 
 (define-subwidget (connect username)
-    (q+:make-qlineedit connect))
+    (q+:make-qlineedit))
 
 (define-subwidget (connect password)
-    (q+:make-qlineedit connect)
+    (q+:make-qlineedit)
   (setf (q+:echo-mode password) (q+:qlineedit.password)))
 
 (define-subwidget (connect ok)
-    (q+:make-qpushbutton "Connect" connect)
+    (q+:make-qpushbutton "Connect")
   (connect! ok (clicked) connect (accept)))
 
 (define-subwidget (connect cancel)
-    (q+:make-qpushbutton "Cancel" connect)
+    (q+:make-qpushbutton "Cancel")
   (connect! cancel (clicked) connect (reject)))
 
 (define-subwidget (connect layout)
-    (q+:make-qgridlayout connect)
+    (q+:make-qgridlayout)
   (let ((form (q+:make-qformlayout)))
     (q+:add-row form "Hostname" hostname)
     (q+:add-row form "Port" port)
     (q+:add-row form "Username" username)
     (q+:add-row form "Password" password)
-    (q+:add-widget layout form 0 0 1 2))
+    (q+:add-layout layout form 0 0 1 2))
   (q+:add-widget layout ok 1 0 1 1)
   (q+:add-widget layout cancel 1 1 1 1))
 
