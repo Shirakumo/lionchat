@@ -14,11 +14,14 @@
   :homepage "https://github.com/Shinmera/lionchat"
   :serial T
   :components ((:file "package")
+               (:file "toolkit")
                (:file "connect")
+               (:file "channel")
+               (:file "client")
                (:file "channel-list")
                (:file "chat-area")
                (:file "main"))
-  :depends-on (:lichat
+  :depends-on (:lichat-tcp-client
                :qtools
                :qtcore
                :qtgui

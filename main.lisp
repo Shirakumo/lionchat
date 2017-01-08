@@ -7,24 +7,43 @@
 (in-package #:org.shirakumo.lichat.lionchat)
 (in-readtable :qtools)
 
+(defvar *main* NIL)
+
 (define-widget main (QMainWindow)
-  ())
+  ((client :initform NIL :accessor client)))
+
+(defmethod initialize-instance :before ((main main) &key)
+  (setf *main* main))
+
+(defmethod find-channel (name (main main))
+  (find-channel name (slot-value main 'channel-list)))
+
+(defmethod (setf find-channel) (value name (main main))
+  (setf (find-channel name (slot-value main 'channel-list)) value))
 
 (define-subwidget (main channel-list)
-    (make-instance 'channel-list)
+    (make-instance 'channel-list :main main)
   (q+:add-dock-widget main (q+:qt.left-dock-widget-area) channel-list))
 
 (define-subwidget (main chat-area)
-    (make-instance 'chat-area)
+    (make-instance 'chat-area :main main)
   (setf (q+:central-widget main) chat-area))
 
 (define-menu (main File)
-    (:item "Connect"
-           (with-finalizing ((c (make-instance 'connect)))
-             (when (q+:exec c)
-               (apply #'connect (settings c)))))
+  (:item "Connect"
+         (when (client main)
+           (close-connection (client main)))
+         (with-finalizing ((c (make-instance 'connect)))
+           (when (q+:exec c)
+             (let ((client (apply #'make-instance 'client :main main (settings c))))
+               (handler-case (setf (client main) (open-connection client))
+                 (error (err)
+                   (q+:qmessagebox-warning main "Lionchat Error"
+                                           (format NIL "Connection failed: ~a" err))))))))
   (:item "Disconnect"
-         (disconnect (connection chat-area)))
+         (when (client main)
+           (close-connection (client main))
+           (setf (client main) NIL)))
   (:separator)
   (:item "Quit"
          (q+:close main)))

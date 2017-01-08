@@ -7,8 +7,19 @@
 (in-package #:org.shirakumo.lichat.lionchat)
 (in-readtable :qtools)
 
+(defun machine-user ()
+  (let ((path (user-homedir-pathname)))
+    (if (cdr (pathname-directory path))
+        (car (last (pathname-directory path)))
+        (machine-instance))))
+
 (define-widget connect (QDialog)
-  ())
+  ()
+  (:default-initargs
+    :hostname "localhost"
+    :port lichat-tcp-client:*default-port*
+    :username (machine-user)
+    :password ""))
 
 (defmethod initialize-instance :after ((connect connect) &key hostname port username password)
   (setf (q+:text (slot-value connect 'hostname)) hostname)
@@ -17,10 +28,10 @@
   (setf (q+:text (slot-value connect 'password)) password))
 
 (define-subwidget (connect hostname)
-    (q+:make-qlineedit connect))
+    (q+:make-qlineedit))
 
 (define-subwidget (connect port)
-    (q+:make-qspinbox lichat:*default-port*)
+    (q+:make-qspinbox)
   (setf (q+:minimum port) 1)
   (setf (q+:maximum port) 65535))
 
@@ -40,7 +51,7 @@
   (connect! cancel (clicked) connect (reject)))
 
 (define-subwidget (connect layout)
-    (q+:make-qgridlayout)
+    (q+:make-qgridlayout connect)
   (let ((form (q+:make-qformlayout)))
     (q+:add-row form "Hostname" hostname)
     (q+:add-row form "Port" port)
@@ -54,5 +65,6 @@
   (with-slots-bound (connect connect)
     (list :hostname (q+:text hostname)
           :port (q+:value port)
-          :username (q+:text username)
-          :password (q+:text password))))
+          :name (q+:text username)
+          :password (when (string/= "" (q+:text password))
+                      (q+:text password)))))
