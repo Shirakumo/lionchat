@@ -14,7 +14,12 @@
    (send-thread :initform NIL :accessor send-thread)))
 
 (defmethod open-connection ((client client))
-  (lichat-tcp-client:open-connection client))
+  (lichat-tcp-client:open-connection client)
+  (setf (send-thread client)
+        (bt:make-thread (lambda ()
+                          (unwind-protect
+                               (handle-send-connection client)
+                            (setf (send-thread client) NIL))))))
 
 (defmethod close-connection ((client client))
   (lichat-tcp-client:close-connection client))
@@ -24,13 +29,6 @@
 
 (defmethod (setf find-channel) (value name (client client))
   (setf (find-channel name (main client)) value))
-
-(defmethod lichat-tcp-client:open-connection :after ((client client))
-  (setf (send-thread client)
-        (bt:make-thread (lambda ()
-                          (unwind-protect
-                               (handle-send-connection client)
-                            (setf (send-thread client) NIL))))))
 
 (defmethod handle-send-connection ((client client))
   (loop while (ignore-errors (open-stream-p (lichat-tcp-client::socket-stream client)))
