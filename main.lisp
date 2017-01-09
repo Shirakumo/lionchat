@@ -21,6 +21,10 @@
 (defmethod (setf find-channel) (value name (main main))
   (setf (find-channel name (slot-value main 'channel-list)) value))
 
+(define-finalizer (main teardown)
+  (when (client main)
+    (close-connection (client main))))
+
 (define-subwidget (main channel-list)
     (make-instance 'channel-list :main main)
   (q+:add-dock-widget main (q+:qt.left-dock-widget-area) channel-list))
