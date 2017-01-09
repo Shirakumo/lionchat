@@ -22,7 +22,7 @@
 
 (define-subwidget (chat-area input-area)
     (q+:make-qwidget)
-  (setf (q+:fixed-height input-area) 100))
+  (setf (q+:fixed-height input-area) 75))
 
 (define-subwidget (chat-area input)
     (make-instance 'chat-input))
