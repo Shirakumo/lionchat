@@ -74,12 +74,35 @@
 
 (defmethod show-update ((update lichat-protocol:message) (stream stream))
   (format stream "<span style=\"color:~a\">~a</span> ~
-                  <span style=\"color:~a\">~a:</span> ~
-                  <span style=\"color:~a;display: inline-block\">~a</span><br>"
+                  <span style=\"color:~a;white-space:pre-wrap;\">~a</span>: ~
+                  <span style=\"color:~a;white-space:pre-wrap;display:inline-block\">~a</span><br>"
           "#CCC" (format-time (lichat-protocol:clock update))
-          "#0088EE"
-          (lichat-protocol:from update)
+          (if (string= (lichat-tcp-client:name (client *main*))
+                       (lichat-protocol:from update))
+              "#0088EE"
+              "#AA3333")
+          (format-name (lichat-protocol:from update))
           "#EEE" (cl-ppcre:regex-replace-all "\\n" (lichat-protocol:text update) "<br>")))
+
+(defmethod show-update ((update lichat-protocol:join) (stream stream))
+  (format stream "<span style=\"color:~a\">~a</span> ~
+                  * <span style=\"color:~a\">~a</span> joined<br>"
+          "#CCC" (format-time (lichat-protocol:clock update))
+          (if (string= (lichat-tcp-client:name (client *main*))
+                       (lichat-protocol:from update))
+              "#0088EE"
+              "#AA3333")
+          (lichat-protocol:from update)))
+
+(defmethod show-update ((update lichat-protocol:leave) (stream stream))
+  (format stream "<span style=\"color:~a\">~a</span> ~
+                  * <span style=\"color:~a\">~a</span> left<br>"
+          "#CCC" (format-time (lichat-protocol:clock update))
+          (if (string= (lichat-tcp-client:name (client *main*))
+                       (lichat-protocol:from update))
+              "#0088EE"
+              "#AA3333")
+          (lichat-protocol:from update)))
 
 (defmethod update ((chat-output chat-output) (update lichat-protocol:update))
   (q+:insert-html chat-output

@@ -25,3 +25,8 @@
                   (#\d :short-weekday)
                   (#\n :short-month)
                   (T char))))
+
+(defun format-name (name &optional (length 10))
+  (if (<= (length name) length)
+      (format NIL "~a~v@{ ~}" name (- length (length name)) T)
+      (format NIL "~a~~" (subseq name 0 (1- length)))))
