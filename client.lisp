@@ -52,9 +52,11 @@
 
 (defmethod lichat-tcp-client:process ((update lichat-protocol:join) (client client))
   (when (string= (lichat-tcp-client:name client)
-               (lichat-protocol:from update))
+                 (lichat-protocol:from update))
     (setf (find-channel (lichat-protocol:channel update) client)
-          (make-instance 'channel :name (lichat-protocol:channel update))))
+          (make-instance 'channel :name (lichat-protocol:channel update)))
+    ;; Get user listing for the new channel.
+    (qsend client 'lichat-protocol:users :channel (lichat-protocol:channel update)))
   (update (find-channel (lichat-protocol:channel update) client)
           update))
 
