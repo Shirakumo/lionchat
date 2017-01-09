@@ -17,3 +17,7 @@
 
 (defmethod update ((channel channel) (update lichat-protocol:users))
   (setf (users channel) (lichat-protocol:users update)))
+
+(defmethod update :after ((channel channel) (update lichat-protocol:update))
+  (when (eql channel (channel (slot-value *main* 'chat-area)))
+    (update (slot-value *main* 'chat-area) update)))
