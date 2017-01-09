@@ -33,8 +33,13 @@
   (setf (q+:widget-resizable scroller) T)
   (setf (q+:widget scroller) list))
 
-(define-subwidget (channel-list add)
-    (q+:make-qpushbutton "+"))
+(define-subwidget (channel-list join)
+    (q+:make-qpushbutton "j")
+  (setf (q+:fixed-width join) 20))
+
+(define-subwidget (channel-list create)
+    (q+:make-qpushbutton "c")
+  (setf (q+:fixed-width create) 20))
 
 (define-subwidget (channel-list channelname)
     (q+:make-qlineedit)
@@ -50,12 +55,22 @@
     (q+:make-qgridlayout center)
   (setf (q+:margin layout) 0)
   (setf (q+:spacing layout) 5)
-  (q+:add-widget layout scroller 0 0 1 2)
+  (q+:add-widget layout scroller 0 0 1 3)
   (q+:add-widget layout channelname 1 0 1 1)
-  (q+:add-widget layout add 1 1 1 1))
+  (q+:add-widget layout join 1 1 1 1)
+  (q+:add-widget layout create 1 2 1 1))
 
 (define-slot (channel-list join) ()
-  (declare (connected add (clicked)))
+  (declare (connected join (clicked)))
+  (let ((name (q+:text channelname)))
+    (when (string/= "" name)
+      (qsend (client (main channel-list))
+             'lichat-protocol:join
+             :channel name)
+      (setf (q+:text channelname) ""))))
+
+(define-slot (channel-list create) ()
+  (declare (connected create (clicked)))
   (let ((name (q+:text channelname)))
     (when (string/= "" name)
       (qsend (client (main channel-list))
