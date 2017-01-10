@@ -21,6 +21,12 @@
 (defmethod (setf find-channel) (value name (main main))
   (setf (find-channel name (slot-value main 'channel-list)) value))
 
+(defmethod active-channel ((main main))
+  (active-channel (slot-value main 'channel-list)))
+
+(defmethod (setf active-channel) ((channel channel) (main main))
+  (setf (active-channel (slot-value main 'channel-list)) channel))
+
 (defmethod enqueue-update :after (update (main main))
   (signal! main (process-updates)))
 
