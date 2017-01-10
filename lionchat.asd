@@ -18,6 +18,7 @@
                (:file "connect")
                (:file "updatable")
                (:file "client")
+               (:file "user")
                (:file "channel")
                (:file "channel-list")
                (:file "chat-area")
