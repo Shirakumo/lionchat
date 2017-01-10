@@ -68,13 +68,14 @@
 (define-slot (channel-item show-menu) ((pos "const QPoint&"))
   (declare (connected channel-item (custom-context-menu-requested "const QPoint&")))
   (with-finalizing ((pos (q+:map-to-global channel-item pos)))
-    (let ((selected (q+:exec menu pos)))
+    (let ((selected (q+:exec menu pos))
+          (channel (qui:widget-item channel-item)))
       (cond ((null-qobject-p selected))
             ((string= "Leave" (q+:text selected))
              (qsend (client *main*) 'lichat-protocol:leave
-                    :channel (name (qui:widget-item channel-item))))
+                    :channel (name channel)))
             ((string= "Settings" (q+:text selected))
-             (with-finalizing ((settings (make-instance 'channel-settings)))
+             (with-finalizing ((settings (make-instance 'channel-settings :channel channel)))
                (q+:exec settings)))))))
 
 (defmethod (setf qui:active-p) :after (value (channel-item channel-item))
@@ -85,14 +86,15 @@
 (define-widget channel-settings (QDialog)
   ())
 
-(defmethod initialize-instance :after ((channel-settings channel-settings) &key name)
-  (setf (q+:text (slot-value channel-settings 'name)) name)
+(defmethod initialize-instance :after ((channel-settings channel-settings) &key channel)
+  (setf (q+:text (slot-value channel-settings 'name))
+        (name channel))
   ;; With response for perms
   )
 
 (define-subwidget (channel-settings name)
     (q+:make-qlineedit)
-  (setf (q+:editable name) NIL))
+  (setf (q+:read-only name) T))
 
 (define-subwidget (channel-settings permissions)
     (q+:make-qtextedit))
