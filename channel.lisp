@@ -63,7 +63,8 @@
 (define-subwidget (channel-item menu) (q+:make-qmenu)
   (setf (q+:context-menu-policy channel-item) (q+:qt.custom-context-menu))
   (q+:add-action menu "Leave")
-  (q+:add-action menu "Settings"))
+  (q+:add-action menu "Settings")
+  (q+:add-action menu "Un/Favourite"))
 
 (define-slot (channel-item show-menu) ((pos "const QPoint&"))
   (declare (connected channel-item (custom-context-menu-requested "const QPoint&")))
@@ -76,7 +77,9 @@
                     :channel (name channel)))
             ((string= "Settings" (q+:text selected))
              (with-finalizing ((settings (make-instance 'channel-settings :channel channel)))
-               (q+:exec settings)))))))
+               (q+:exec settings)))
+            ((string= "Un/Favourite" (q+:text selected))
+             )))))
 
 (defmethod (setf qui:active-p) :after (value (channel-item channel-item))
   (when value
