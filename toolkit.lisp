@@ -30,3 +30,13 @@
   (if (<= (length name) length)
       (format NIL "~a~v@{ ~}" name (- length (length name)) T)
       (format NIL "~a~~" (subseq name 0 (1- length)))))
+
+(defparameter *url-regex*
+  (cl-ppcre:create-scanner
+   "((?:[\\w-_]+://)([\\w_-]+(?:(?:\\.[\\w_-]+)+))(?:[\\w.,@?^=%&:/~+#-()]*[\\w@?^=%&/~+#-])?)"))
+
+(defun linkify-urls (text)
+  (cl-ppcre:regex-replace-all
+   *url-regex*
+   text
+   "<a href=\"\\1\">\\1</a>"))

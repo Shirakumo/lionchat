@@ -80,15 +80,15 @@
 
 (defmethod show-update ((update lichat-protocol:message) (stream stream))
   (format stream "<span style=\"color:~a\">~a</span> ~
-                  <span style=\"color:~a;white-space:pre-wrap;\">~a</span>: ~
+                  <span style=\"color:~a;white-space:pre-wrap;\" title=\"~a\">~a</span>: ~
                   <span style=\"color:~a;white-space:pre-wrap;display:inline-block\">~a</span><br>"
           "#CCC" (format-time (lichat-protocol:clock update))
           (if (string= (lichat-tcp-client:name (client *main*))
                        (lichat-protocol:from update))
               "#0088EE"
               "#AA3333")
-          (format-name (lichat-protocol:from update))
-          "#EEE" (cl-ppcre:regex-replace-all "\\n" (lichat-protocol:text update) "<br>")))
+          (lichat-protocol:from update) (format-name (lichat-protocol:from update))
+          "#EEE" (linkify-urls (cl-ppcre:regex-replace-all "\\n" (lichat-protocol:text update) "<br>"))))
 
 (defun show-update-action (update stream msg &rest args)
   (format stream "<span style=\"color:~a\">~a</span> ~

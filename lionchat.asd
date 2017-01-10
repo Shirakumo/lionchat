@@ -29,4 +29,5 @@
                :qtgui
                :bordeaux-threads
                :documentation-utils
-               :verbose))
+               :verbose
+               :cl-ppcre))
