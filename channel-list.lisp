@@ -13,18 +13,16 @@
 
 (defmethod find-channel (name (channel-list channel-list))
   (if (eql name T)
-      (find T (channels channel-list) :key #'primary)
+      (find T (channels channel-list) :key #'primary-p)
       (find name (channels channel-list) :key #'name :test #'string-equal)))
 
 (defmethod (setf find-channel) (value name (channel-list channel-list))
   (let ((prev (find-channel name channel-list))
         (channels (channels channel-list)))
     (unless (eql value prev)
-      (when prev
-        (finalize prev)
-        (setf channels (remove prev channels)))
+      (setf channels (remove prev channels))
       (when value
-        (setf channels (sort (list* value (channels channel-list))
+        (setf channels (sort (list* value channels)
                              #'string< :key #'name)))
       (setf (channels channel-list) channels)))
   value)
@@ -33,8 +31,8 @@
   (update-listing channel-list))
 
 (define-initializer (channel-list setup)
-  (setf (q+:features channel-list) (q+:qdockwidget.no-dock-widget-features))
-  (setf (q+:title-bar-widget channel-list) (q+:make-qwidget channel-list)))
+  (setf (q+:features channel-list) (q+:qdockwidget.dock-widget-movable))
+  (setf (q+:window-title channel-list) "Channels"))
 
 (define-subwidget (channel-list list)
     (make-instance 'qui:listing :draggable NIL
@@ -101,8 +99,10 @@
     (dolist (channel (channels channel-list))
       (qui:add-item channel list))))
 
-(defmethod active-channel ((channel-list channel-list))
+(defmethod channel ((channel-list channel-list))
   (qui:active-item (slot-value channel-list 'list)))
 
-(defmethod (setf active-channel) ((channel channel) (channel-list channel-list))
-  (setf (qui:active-item (slot-value channel-list 'list)) channel))
+(defmethod (setf channel) (channel (channel-list channel-list))
+  (if channel
+      (setf (qui:active-item (slot-value channel-list 'list)) channel)
+      (setf (channels channel-list) NIL)))

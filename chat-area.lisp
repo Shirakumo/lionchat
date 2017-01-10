@@ -78,6 +78,9 @@
 (defmethod show-update ((update lichat-protocol:update) (stream stream))
   (format stream "[UPDATE: ~a]<br>" (type-of update)))
 
+(defmethod show-update ((update lichat-protocol:failure) (stream stream))
+  (format stream "[FAILURE: ~a ~a]<br>" (type-of update) (lichat-protocol:text update)))
+
 (defmethod show-update ((update lichat-protocol:message) (stream stream))
   (format stream "<span style=\"color:~a\">~a</span> ~
                   <span style=\"color:~a;white-space:pre-wrap;\" title=\"~a\">~a</span>: ~

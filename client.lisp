@@ -21,8 +21,7 @@
   client)
 
 (defmethod close-connection :before ((client client))
-  (setf (channels (slot-value (main client) 'channel-list)) NIL)
-  (setf (channel (slot-value (main client) 'chat-area)) NIL))
+  (setf (channel (main client)) NIL))
 
 (defmethod find-channel (name (client client))
   (find-channel name (main client)))

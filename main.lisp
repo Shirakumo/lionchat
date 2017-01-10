@@ -21,11 +21,19 @@
 (defmethod (setf find-channel) (value name (main main))
   (setf (find-channel name (slot-value main 'channel-list)) value))
 
-(defmethod active-channel ((main main))
-  (active-channel (slot-value main 'channel-list)))
+(defmethod channel ((main main))
+  (channel (slot-value main 'chat-area)))
 
-(defmethod (setf active-channel) ((channel channel) (main main))
-  (setf (active-channel (slot-value main 'channel-list)) channel))
+(defmethod (setf channel) (channel (main main))
+  (setf (channel (slot-value main 'channel-list)) channel)
+  (setf (channel (slot-value main 'chat-area)) channel)
+  (setf (channel (slot-value main 'user-list)) channel))
+
+(defmethod find-user (name (main main))
+  (find-user name (slot-value main 'user-list)))
+
+(defmethod (setf find-user) (value name (main main))
+  (setf (find-user name (slot-value main 'user-list)) value))
 
 (defmethod enqueue-update :after (update (main main))
   (signal! main (process-updates)))
@@ -36,10 +44,11 @@
   (declare (connected main (process-updates)))
   (process-updates main))
 
-(defmethod update ((main main) (update lichat-protocol:failure))
+(defmethod update ((main main) (update lichat-protocol:update))
   (update (find-channel T main) update))
 
 (defmethod update ((main main) (update lichat-protocol:channel-update))
+  (update (slot-value main 'user-list) update)
   (update (find-channel (lichat-protocol:channel update) main) update))
 
 (defmethod update ((main main) (update lichat-protocol:join))
@@ -52,7 +61,7 @@
     (qsend (client main) 'lichat-protocol:users :channel (lichat-protocol:channel update)))
   (let ((channel (find-channel (lichat-protocol:channel update) main)))
     (update channel update)
-    (setf (active-channel (slot-value main 'channel-list)) channel)))
+    (setf (channel main) channel)))
 
 (defmethod update ((main main) (update lichat-protocol:leave))
   (update (find-channel (lichat-protocol:channel update) main)
@@ -68,6 +77,10 @@
 (define-subwidget (main channel-list)
     (make-instance 'channel-list :main main)
   (q+:add-dock-widget main (q+:qt.left-dock-widget-area) channel-list))
+
+(define-subwidget (main user-list)
+    (make-instance 'user-list :main main)
+  (q+:add-dock-widget main (q+:qt.right-dock-widget-area) user-list))
 
 (define-subwidget (main chat-area)
     (make-instance 'chat-area :main main)

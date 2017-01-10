@@ -22,7 +22,7 @@
   (:default-initargs :draw-item NIL))
 
 (define-subwidget (user-item name)
-    (q+:make-qlable (name (qui:widget-item user-item))))
+    (q+:make-qlabel (name (qui:widget-item user-item))))
 
 (define-subwidget (user-item type)
     (q+:make-qlabel (case (standing (qui:widget-item user-item))

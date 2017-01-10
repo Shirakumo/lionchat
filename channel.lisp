@@ -28,13 +28,15 @@
 
 ;; Maintain userlist
 (defmethod update ((channel channel) (update lichat-protocol:users))
-  (setf (users channel) (lichat-protocol:users update)))
+  (setf (users channel) (loop for user in (lichat-protocol:users update)
+                              collect (find-user user *main*))))
 
 (defmethod update :after ((channel channel) (update lichat-protocol:join))
-  (setf (users channel) (list* (lichat-protocol:from update) (users channel))))
+  (pushnew (find-user (lichat-protocol:from update) *main*) (users channel)))
 
 (defmethod update :after ((channel channel) (update lichat-protocol:leave))
-  (setf (users channel) (remove (lichat-protocol:from update) (users channel))))
+  (setf (users channel) (remove (lichat-protocol:from update) (users channel)
+                                :key #'name :test #'string=)))
 
 (defmethod qui:coerce-item ((channel channel) container)
   (make-instance 'channel-item :item channel :container container))
@@ -42,6 +44,10 @@
 (define-widget channel-item (QWidget qui:listing-item)
   ()
   (:default-initargs :draw-item NIL))
+
+(defmethod qui:drag-start ((channel-item channel-item) x y)
+  (declare (ignore x y))
+  (setf (channel *main*) (qui:widget-item channel-item)))
 
 (define-subwidget (channel-item name)
     (q+:make-qlabel (name (qui:widget-item channel-item))))
@@ -80,11 +86,6 @@
                (q+:exec settings)))
             ((string= "Un/Favourite" (q+:text selected))
              )))))
-
-(defmethod (setf qui:active-p) :after (value (channel-item channel-item))
-  (when value
-    (setf (channel (slot-value *main* 'chat-area))
-          (qui:widget-item channel-item))))
 
 (define-widget channel-settings (QDialog)
   ())

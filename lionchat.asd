@@ -19,6 +19,7 @@
                (:file "updatable")
                (:file "client")
                (:file "user")
+               (:file "user-list")
                (:file "channel")
                (:file "channel-list")
                (:file "chat-area")
