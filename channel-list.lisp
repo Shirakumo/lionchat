@@ -9,24 +9,41 @@
 
 (define-widget channel-list (QDockWidget)
   ((main :initarg :main :accessor main)
-   (channels :initform (make-hash-table :test 'equalp) :accessor channels)))
+   (channels :initform () :accessor channels)))
 
 (defmethod find-channel (name (channel-list channel-list))
-  (gethash name (channels channel-list)))
+  (if (eql name T)
+      (find T (channels channel-list) :key #'primary)
+      (find name (channels channel-list) :key #'name :test #'string-equal)))
 
 (defmethod (setf find-channel) (value name (channel-list channel-list))
-  (if value
-      (setf (gethash name (channels channel-list)) value)
-      (remhash name (channels channel-list)))
-  (update-listing channel-list)
+  (let ((prev (find-channel name channel-list))
+        (channels (channels channel-list)))
+    (unless (eql value prev)
+      (when prev
+        (finalize prev)
+        (setf channels (remove prev channels)))
+      (when value
+        (setf channels (sort (list* value (channels channel-list))
+                             #'string< :key #'name)))
+      (setf (channels channel-list) channels)))
   value)
+
+(defmethod (setf channels) :after (value (channel-list channel-list))
+  (update-listing channel-list))
 
 (define-initializer (channel-list setup)
   (setf (q+:features channel-list) (q+:qdockwidget.no-dock-widget-features))
   (setf (q+:title-bar-widget channel-list) (q+:make-qwidget channel-list)))
 
 (define-subwidget (channel-list list)
-    (q+:make-qlistwidget))
+    (make-instance 'qui:listing :draggable NIL
+                                :sorting (lambda (a b)
+                                           (or (primary-p a)
+                                               (and (not (primary-p b))
+                                                    (or (anonymous-p a)
+                                                        (and (not (anonymous-p b))
+                                                             (string< (name a) (name b)))))))))
 
 (define-subwidget (channel-list scroller)
     (q+:make-qscrollarea)
@@ -78,14 +95,14 @@
              :channel name)
       (setf (q+:text channelname) ""))))
 
-(define-slot (channel-list show) ((item "QListWidgetItem *"))
-  (declare (connected list (item-clicked "QListWidgetItem *")))
-  (let ((channel (find-channel (q+:text item) channel-list)))
-    (setf (channel (slot-value (main channel-list) 'chat-area))
-          channel)))
-
 (defmethod update-listing ((channel-list channel-list))
   (let ((list (slot-value channel-list 'list)))
-    (q+:clear list)
-    (q+:add-items list (loop for name being the hash-keys of (channels channel-list)
-                             collect name))))
+    (qui:clear-layout list T)
+    (dolist (channel (channels channel-list))
+      (qui:add-item channel list))))
+
+(defmethod active-channel ((channel-list channel-list))
+  (qui:active-item (slot-value channel-list 'list)))
+
+(defmethod (setf active-channel) ((channel channel) (channel-list channel-list))
+  (setf (qui:active-item (slot-value channel-list 'list)) channel))

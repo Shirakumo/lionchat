@@ -7,5 +7,7 @@
 (in-package #:cl-user)
 (defpackage #:lionchat
   (:nicknames #:org.shirakumo.lichat.lionchat)
-  (:use #:cl+qt)
-  )
+  (:use #:cl+qt #:lichat-tcp-client)
+  (:shadow #:client)
+  (:export
+   #:start))

@@ -9,10 +9,11 @@
 
 (define-widget chat-area (QWidget)
   ((main :initarg :main :accessor main)
-   (channel :initarg :channel :accessor channel)))
+   (channel :initform NIL :accessor channel)))
 
-(defmethod (setf channel) :after ((channel channel) (chat-area chat-area))
-  (update (slot-value chat-area 'output) channel))
+(defmethod (setf channel) :after (thing (chat-area chat-area))
+  (update (slot-value chat-area 'output) thing)
+  (setf (q+:enabled (slot-value chat-area 'send)) thing))
 
 (defmethod update ((chat-area chat-area) thing)
   (update (slot-value chat-area 'output) thing))
@@ -30,7 +31,8 @@
 (define-subwidget (chat-area send)
     (q+:make-qpushbutton "Send")
   (setf (q+:size-policy send) (values (q+:qsizepolicy.maximum)
-                                      (q+:qsizepolicy.expanding))))
+                                      (q+:qsizepolicy.expanding)))
+  (setf (q+:enabled send) NIL))
 
 (define-subwidget (chat-area layout)
     (q+:make-qvboxlayout chat-area)
@@ -47,11 +49,12 @@
 (define-slot (chat-area send) ()
   (declare (connected send (clicked)))
   (declare (connected input (confirmed)))
-  (qsend (client (main chat-area))
-         'lichat-protocol:message
-         :channel (name (channel chat-area))
-         :text (q+:to-plain-text input))
-  (setf (q+:plain-text input) ""))
+  (when (channel chat-area)
+    (qsend (client (main chat-area))
+           'lichat-protocol:message
+           :channel (name (channel chat-area))
+           :text (q+:to-plain-text input))
+    (setf (q+:plain-text input) "")))
 
 (define-widget chat-output (QTextBrowser)
   ())
@@ -64,6 +67,9 @@
 (define-subwidget (chat-output font) (q+:make-qfont "Consolas, Inconsolata, Monospace" 10)
   (setf (q+:style-hint font) (q+:qfont.type-writer))
   (setf (q+:font chat-output) font))
+
+(defmethod update ((chat-output chat-output) (null null))
+  (q+:clear chat-output))
 
 (defmethod update ((chat-output chat-output) (channel channel))
   (q+:clear chat-output)

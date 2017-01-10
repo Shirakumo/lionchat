@@ -9,7 +9,7 @@
 
 (defvar *main* NIL)
 
-(define-widget main (QMainWindow)
+(define-widget main (QMainWindow updatable)
   ((client :initform NIL :accessor client)))
 
 (defmethod initialize-instance :before ((main main) &key)
@@ -20,6 +20,40 @@
 
 (defmethod (setf find-channel) (value name (main main))
   (setf (find-channel name (slot-value main 'channel-list)) value))
+
+(defmethod enqueue-update :after (update (main main))
+  (signal! main (process-updates)))
+
+(define-signal (main process-updates) ())
+
+(define-slot (main process-updates) ()
+  (declare (connected main (process-updates)))
+  (process-updates main))
+
+(defmethod update ((main main) (update lichat-protocol:failure))
+  (update (find-channel T main) update))
+
+(defmethod update ((main main) (update lichat-protocol:channel-update))
+  (update (find-channel (lichat-protocol:channel update) main) update))
+
+(defmethod update ((main main) (update lichat-protocol:join))
+  (when (string= (name (client main)) (lichat-protocol:from update))
+    (setf (find-channel (lichat-protocol:channel update) main)
+          (make-instance 'channel :name (lichat-protocol:channel update)
+                                  :primary-p (equal (server-name (client main))
+                                                    (lichat-protocol:channel update))))
+    ;; Get user listing for the new channel.
+    (qsend (client main) 'lichat-protocol:users :channel (lichat-protocol:channel update)))
+  (let ((channel (find-channel (lichat-protocol:channel update) main)))
+    (update channel update)
+    (setf (active-channel (slot-value main 'channel-list)) channel)))
+
+(defmethod update ((main main) (update lichat-protocol:leave))
+  (update (find-channel (lichat-protocol:channel update) main)
+          update)
+  (when (string= (name (client main)) (lichat-protocol:from update))
+    (setf (find-channel (lichat-protocol:channel update) main)
+          NIL)))
 
 (define-finalizer (main teardown)
   (when (client main)

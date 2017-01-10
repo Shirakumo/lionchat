@@ -7,22 +7,22 @@
 (in-package #:org.shirakumo.lichat.lionchat)
 (in-readtable :qtools)
 
-(defclass client (lichat-tcp-client:client)
+(defclass client (lichat-tcp-client:client updatable)
   ((main :initarg :main :accessor main)
-   (send-queue :initform (make-array 0 :adjustable T :fill-pointer T) :accessor send-queue)
-   (queue-lock :initform (bt:make-lock) :accessor queue-lock)
+   (server-name :initform NIL :accessor server-name)
    (send-thread :initform NIL :accessor send-thread)))
 
-(defmethod open-connection ((client client))
-  (lichat-tcp-client:open-connection client)
+(defmethod open-connection :after ((client client))
   (setf (send-thread client)
         (bt:make-thread (lambda ()
                           (unwind-protect
                                (handle-send-connection client)
-                            (setf (send-thread client) NIL))))))
+                            (setf (send-thread client) NIL)))))
+  client)
 
-(defmethod close-connection ((client client))
-  (lichat-tcp-client:close-connection client))
+(defmethod close-connection :before ((client client))
+  (setf (channels (slot-value (main client) 'channel-list)) NIL)
+  (setf (channel (slot-value (main client) 'chat-area)) NIL))
 
 (defmethod find-channel (name (client client))
   (find-channel name (main client)))
@@ -32,48 +32,22 @@
 
 (defmethod handle-send-connection ((client client))
   (loop while (ignore-errors (open-stream-p (lichat-tcp-client::socket-stream client)))
-        for queue = (send-queue client)
-        do (cond ((= 0 (length queue))
-                  (sleep 0.1))
-                 (T
-                  (v:info :lionchat.client "Found messages to send.")
-                  (bt:with-lock-held ((queue-lock client))
-                    (setf (send-queue client) (make-array 0 :adjustable T :fill-pointer T)))
-                  (loop for update across queue
-                        do (lichat-tcp-client:send update client))))))
+        do (unless (process-updates client)
+             (sleep 0.01))))
 
-(defmethod lichat-tcp-client:process ((update lichat-protocol:failure) (client client))
-  (let ((channel (find-channel (lichat-protocol:from update) client)))
-    (update channel update)))
+(defmethod update ((client client) (update lichat-protocol:update))
+  (send update client))
 
-(defmethod lichat-tcp-client:process ((update lichat-protocol:channel-update) (client client))
-  (let ((channel (find-channel (lichat-protocol:channel update) client)))
-    (update channel update)))
+;; FIXME: Queue for awaiting events from the GUI
+(defmethod process ((update lichat-protocol:connect) (client client))
+  (setf (server-name client) (lichat-protocol:from update)))
 
-(defmethod lichat-tcp-client:process ((update lichat-protocol:join) (client client))
-  (when (string= (lichat-tcp-client:name client)
-                 (lichat-protocol:from update))
-    (setf (find-channel (lichat-protocol:channel update) client)
-          (make-instance 'channel :name (lichat-protocol:channel update)))
-    ;; Get user listing for the new channel.
-    (qsend client 'lichat-protocol:users :channel (lichat-protocol:channel update)))
-  (update (find-channel (lichat-protocol:channel update) client)
-          update))
-
-(defmethod lichat-tcp-client:process ((update lichat-protocol:leave) (client client))
-  (update (find-channel (lichat-protocol:channel update) client)
-          update)
-  (when (string= (lichat-tcp-client:name client)
-                 (lichat-protocol:from update))
-    (setf (find-channel (lichat-protocol:channel update) client)
-          NIL)))
-
-(defmethod enqueue-for-sending ((update lichat-protocol:update) (client client))
-  (bt:with-lock-held ((queue-lock client))
-    (vector-push-extend update (send-queue client))))
+;; Deliver to main thread for synchronised processing
+(defmethod process ((update lichat-protocol:update) (client client))
+  (enqueue-update update (main client)))
 
 (defun qsend (client type &rest initargs)
-  (enqueue-for-sending
+  (enqueue-update
    (apply #'make-instance type
           :from (lichat-tcp-client:name client)
           initargs)

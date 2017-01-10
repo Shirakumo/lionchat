@@ -16,12 +16,14 @@
   :components ((:file "package")
                (:file "toolkit")
                (:file "connect")
-               (:file "channel")
+               (:file "updatable")
                (:file "client")
+               (:file "channel")
                (:file "channel-list")
                (:file "chat-area")
                (:file "main"))
   :depends-on (:lichat-tcp-client
+               :qtools-ui-listing
                :qtools
                :qtcore
                :qtgui
