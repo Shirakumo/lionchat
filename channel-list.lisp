@@ -63,8 +63,8 @@
 (define-subwidget (channel-list center)
     (q+:make-qwidget)
   (setf (q+:widget channel-list) center)
-  (setf (q+:size-policy center) (values (q+:qsizepolicy.maximum)
-                                        (q+:qsizepolicy.minimum))))
+  (setf (q+:size-policy center) (values (q+:qsizepolicy.preferred)
+                                        (q+:qsizepolicy.preferred))))
 
 (define-subwidget (channel-list layout)
     (q+:make-qgridlayout center)

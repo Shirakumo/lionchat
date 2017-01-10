@@ -77,8 +77,8 @@
 (define-subwidget (user-list center)
     (q+:make-qwidget)
   (setf (q+:widget user-list) center)
-  (setf (q+:size-policy center) (values (q+:qsizepolicy.maximum)
-                                        (q+:qsizepolicy.minimum))))
+  (setf (q+:size-policy center) (values (q+:qsizepolicy.preferred)
+                                        (q+:qsizepolicy.preferred))))
 
 (define-subwidget (user-list layout)
     (q+:make-qgridlayout center)
