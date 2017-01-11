@@ -45,7 +45,7 @@
   (process-updates main))
 
 (defmethod update ((main main) (update lichat-protocol:update))
-  (update (find-channel T main) update))
+  (update (channel main) update))
 
 (defmethod update ((main main) (update lichat-protocol:channel-update))
   (update (slot-value main 'user-list) update)
