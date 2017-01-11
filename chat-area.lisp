@@ -71,7 +71,7 @@
 (defmethod update ((chat-output chat-output) (null null))
   (q+:clear chat-output)
   (setf (q+:default-style-sheet (q+:document chat-output))
-        (format NIL "a{color:~a}" (ubiquitous:value :style :link))))
+        (format NIL "a{color:~a} *{white-space:pre-wrap;}" (ubiquitous:value :style :link))))
 
 (defmethod update ((chat-output chat-output) (channel channel))
   (update chat-output NIL)
@@ -91,8 +91,8 @@
 
 (defmethod show-update ((update lichat-protocol:message) (stream stream))
   (format stream "<span style=\"color:~a\">~a</span> ~
-                  <span style=\"color:~a;white-space:pre-wrap;\" title=\"~a\">~a</span>: ~
-                  <span style=\"color:~a;white-space:pre-wrap;display:inline-block\">~a</span><br>"
+                  <span style=\"color:~a\" title=\"~a\">~a</span>: ~
+                  <span style=\"color:~a\">~a</span><br>"
           (ubiquitous:value :style :time) (format-time (lichat-protocol:clock update))
           (object-color (lichat-protocol:from update))
           (lichat-protocol:from update) (format-name (lichat-protocol:from update))
