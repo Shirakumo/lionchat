@@ -101,13 +101,19 @@
            (close-connection (client main))
            (setf (client main) NIL)))
   (:separator)
-  (:item "Settings"
+  (:item "Settings..."
          (with-finalizing ((c (make-instance 'settings)))
            (when (q+:exec c)
              (setf (ubiquitous:value) (settings c))
              (setf (channel main) (channel main)))))
   (:item "Quit"
          (q+:close main)))
+
+(define-menu (main Window)
+  (:item "Channels"
+         (setf (q+:visible channel-list) (not (q+:is-visible channel-list))))
+  (:item "Users"
+         (setf (q+:visible user-list) (not (q+:is-visible user-list)))))
 
 (define-menu (main Help)
   (:item "About"
