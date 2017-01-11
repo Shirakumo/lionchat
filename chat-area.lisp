@@ -69,10 +69,12 @@
   (setf (q+:font chat-output) font))
 
 (defmethod update ((chat-output chat-output) (null null))
-  (q+:clear chat-output))
+  (q+:clear chat-output)
+  (setf (q+:default-style-sheet (q+:document chat-output))
+        (format NIL "a{color:~a}" (ubiquitous:value :style :link))))
 
 (defmethod update ((chat-output chat-output) (channel channel))
-  (q+:clear chat-output)
+  (update chat-output NIL)
   (update chat-output (updates channel)))
 
 (defmethod show-update ((update lichat-protocol:update) (stream stream))

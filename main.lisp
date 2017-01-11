@@ -105,7 +105,7 @@
          (with-finalizing ((c (make-instance 'settings)))
            (when (q+:exec c)
              (setf (ubiquitous:value) (settings c))
-             (setf (channel chat-area) (channel chat-area)))))
+             (setf (channel main) (channel main)))))
   (:item "Quit"
          (q+:close main)))
 
