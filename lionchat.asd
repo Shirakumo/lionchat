@@ -24,6 +24,7 @@
                (:file "channel")
                (:file "channel-list")
                (:file "chat-area")
+               (:file "tray")
                (:file "main"))
   :depends-on (:lichat-tcp-client
                :qtools-ui-listing

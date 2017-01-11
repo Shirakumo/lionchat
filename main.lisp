@@ -85,6 +85,11 @@
     (make-instance 'chat-area :main main)
   (setf (q+:central-widget main) chat-area))
 
+(define-subwidget (main tray)
+    (make-instance 'tray :main main)
+  (when (ubiquitous:value :behavior :tray)
+    (q+:show tray)))
+
 (define-menu (main File)
   (:item "Connect..."
          (when (client main)
@@ -105,7 +110,8 @@
          (with-finalizing ((c (make-instance 'settings)))
            (when (q+:exec c)
              (setf (ubiquitous:value) (settings c))
-             (setf (channel main) (channel main)))))
+             (setf (channel main) (channel main))
+             (setf (q+:visible tray) (ubiquitous:value :behavior :tray)))))
   (:item "Quit"
          (q+:close main)))
 
