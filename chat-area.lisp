@@ -76,20 +76,23 @@
   (update chat-output (updates channel)))
 
 (defmethod show-update ((update lichat-protocol:update) (stream stream))
-  (format stream "[UPDATE: ~a]<br>" (type-of update)))
+  (format stream "<span style=\"color:~a\">~a</span> ~
+                  <span style=\"color:~a\">* UPDATE</span> ~a<br>"
+          "#CCC" (format-time (lichat-protocol:clock update))
+          "#0F0" (type-of update)))
 
 (defmethod show-update ((update lichat-protocol:failure) (stream stream))
-  (format stream "[FAILURE: ~a ~a]<br>" (type-of update) (lichat-protocol:text update)))
+  (format stream "<span style=\"color:~a\">~a</span> ~
+                  <span style=\"color:~a\">* ~a</span> ~a<br>"
+          "#CCC" (format-time (lichat-protocol:clock update))
+          "#F00"(type-of update) (lichat-protocol:text update)))
 
 (defmethod show-update ((update lichat-protocol:message) (stream stream))
   (format stream "<span style=\"color:~a\">~a</span> ~
                   <span style=\"color:~a;white-space:pre-wrap;\" title=\"~a\">~a</span>: ~
                   <span style=\"color:~a;white-space:pre-wrap;display:inline-block\">~a</span><br>"
           "#CCC" (format-time (lichat-protocol:clock update))
-          (if (string= (lichat-tcp-client:name (client *main*))
-                       (lichat-protocol:from update))
-              "#0088EE"
-              "#AA3333")
+          (object-color (lichat-protocol:from update))
           (lichat-protocol:from update) (format-name (lichat-protocol:from update))
           "#EEE" (linkify-urls (cl-ppcre:regex-replace-all "\\n" (lichat-protocol:text update) "<br>"))))
 
@@ -97,10 +100,7 @@
   (format stream "<span style=\"color:~a\">~a</span> ~
                   * <span style=\"color:~a\">~a</span> ~?<br>"
           "#CCC" (format-time (lichat-protocol:clock update))
-          (if (string= (lichat-tcp-client:name (client *main*))
-                       (lichat-protocol:from update))
-              "#0088EE"
-              "#AA3333")
+          (object-color (lichat-protocol:from update))
           (lichat-protocol:from update)
           msg args))
 

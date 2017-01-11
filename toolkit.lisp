@@ -40,3 +40,17 @@
    *url-regex*
    text
    "<a href=\"\\1\">\\1</a>"))
+
+(defun object-color (object)
+  (let* ((hash (sxhash object))
+         (color (logand hash #xFFFFFF))
+         (red (ldb (byte 8 16) color))
+         (green (ldb (byte 8 8) color))
+         (blue (ldb (byte 8 0) color)))
+    ;; Make sure to constrain the range of the colours at least a
+    ;; little bit with the hope to avoid making colours that are
+    ;; completely unreadable for some backgrounds.
+    (format NIL "#~2,'0x~2,'0x~2,'0x"
+            (min 200 (max 50 red))
+            (min 200 (max 50 green))
+            (min 200 (max 50 blue)))))
