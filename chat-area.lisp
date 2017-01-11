@@ -111,10 +111,12 @@
   (show-update-action update stream "left"))
 
 (defmethod show-update ((update lichat-protocol:kick) (stream stream))
-  (show-update-action update stream "kicked " (lichat-protocol:target update)))
+  (show-update-action update stream "kicked <span style=\"color:~a\">~a</a>"
+                      (object-color (lichat-protocol:target update)) (lichat-protocol:target update)))
 
-(defmethod show-update ((update lichat-protocol:kick) (stream stream))
-  (show-update-action update stream "pulled " (lichat-protocol:target update)))
+(defmethod show-update ((update lichat-protocol:pull) (stream stream))
+  (show-update-action update stream "pulled <span style=\"color:~a\">~a</a>"
+                      (object-color (lichat-protocol:target update)) (lichat-protocol:target update)))
 
 (defmethod update ((chat-output chat-output) (update lichat-protocol:update))
   (q+:insert-html chat-output
