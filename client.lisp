@@ -12,6 +12,9 @@
    (server-name :initform NIL :accessor server-name)
    (send-thread :initform NIL :accessor send-thread)))
 
+(defmethod client ((client client))
+  client)
+
 (defmethod open-connection :after ((client client))
   (setf (send-thread client)
         (bt:make-thread (lambda ()
@@ -50,4 +53,4 @@
    (apply #'make-instance type
           :from (lichat-tcp-client:name client)
           initargs)
-   client))
+   (client client)))
