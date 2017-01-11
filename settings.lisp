@@ -34,6 +34,7 @@
 
 (define-subwidget (settings layout)
     (q+:make-qgridlayout settings)
+  (q+:resize settings 300 400)
   (q+:add-widget layout tabs 0 0 1 2)
   (q+:add-widget layout ok 1 0 1 1)
   (q+:add-widget layout cancel 1 1 1 1))
