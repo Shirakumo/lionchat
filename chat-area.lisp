@@ -78,28 +78,29 @@
 (defmethod show-update ((update lichat-protocol:update) (stream stream))
   (format stream "<span style=\"color:~a\">~a</span> ~
                   <span style=\"color:~a\">* UPDATE</span> ~a<br>"
-          "#CCC" (format-time (lichat-protocol:clock update))
-          "#0F0" (type-of update)))
+          (ubiquitous:value :style :time) (format-time (lichat-protocol:clock update))
+          (ubiquitous:value :style :update) (type-of update)))
 
 (defmethod show-update ((update lichat-protocol:failure) (stream stream))
   (format stream "<span style=\"color:~a\">~a</span> ~
                   <span style=\"color:~a\">* ~a</span> ~a<br>"
-          "#CCC" (format-time (lichat-protocol:clock update))
-          "#F00"(type-of update) (lichat-protocol:text update)))
+          (ubiquitous:value :style :time) (format-time (lichat-protocol:clock update))
+          (ubiquitous:value :style :error) (type-of update) (lichat-protocol:text update)))
 
 (defmethod show-update ((update lichat-protocol:message) (stream stream))
   (format stream "<span style=\"color:~a\">~a</span> ~
                   <span style=\"color:~a;white-space:pre-wrap;\" title=\"~a\">~a</span>: ~
                   <span style=\"color:~a;white-space:pre-wrap;display:inline-block\">~a</span><br>"
-          "#CCC" (format-time (lichat-protocol:clock update))
+          (ubiquitous:value :style :time) (format-time (lichat-protocol:clock update))
           (object-color (lichat-protocol:from update))
           (lichat-protocol:from update) (format-name (lichat-protocol:from update))
-          "#EEE" (linkify-urls (cl-ppcre:regex-replace-all "\\n" (lichat-protocol:text update) "<br>"))))
+          (ubiquitous:value :style :text)
+          (linkify-urls (cl-ppcre:regex-replace-all "\\n" (lichat-protocol:text update) "<br>"))))
 
 (defun show-update-action (update stream msg &rest args)
   (format stream "<span style=\"color:~a\">~a</span> ~
                   * <span style=\"color:~a\">~a</span> ~?<br>"
-          "#CCC" (format-time (lichat-protocol:clock update))
+          (ubiquitous:value :style :time) (format-time (lichat-protocol:clock update))
           (object-color (lichat-protocol:from update))
           (lichat-protocol:from update)
           msg args))

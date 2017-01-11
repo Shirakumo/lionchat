@@ -44,6 +44,7 @@
 
 (define-subwidget (connect ok)
     (q+:make-qpushbutton "Connect")
+  (setf (q+:default ok) T)
   (connect! ok (clicked) connect (accept)))
 
 (define-subwidget (connect cancel)

@@ -86,7 +86,7 @@
   (setf (q+:central-widget main) chat-area))
 
 (define-menu (main File)
-  (:item "Connect"
+  (:item "Connect..."
          (when (client main)
            (close-connection (client main)))
          (with-finalizing ((c (make-instance 'connect)))
@@ -101,6 +101,11 @@
            (close-connection (client main))
            (setf (client main) NIL)))
   (:separator)
+  (:item "Settings"
+         (with-finalizing ((c (make-instance 'settings)))
+           (when (q+:exec c)
+             (setf (ubiquitous:value) (settings c))
+             (setf (channel chat-area) (channel chat-area)))))
   (:item "Quit"
          (q+:close main)))
 
@@ -128,4 +133,5 @@ Version: ~a"
 (defun start (&key)
   (let ((*package* #.*package*))
     (v:output-here)
+    (default-configuration)
     (with-main-window (main 'main :name "Lionchat"))))

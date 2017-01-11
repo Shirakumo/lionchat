@@ -15,6 +15,7 @@
   :serial T
   :components ((:file "package")
                (:file "toolkit")
+               (:file "settings")
                (:file "connect")
                (:file "updatable")
                (:file "client")
@@ -26,10 +27,12 @@
                (:file "main"))
   :depends-on (:lichat-tcp-client
                :qtools-ui-listing
+               :qtools-ui-options
                :qtools
                :qtcore
                :qtgui
                :bordeaux-threads
                :documentation-utils
                :verbose
-               :cl-ppcre))
+               :cl-ppcre
+               :ubiquitous))

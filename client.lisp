@@ -54,3 +54,46 @@
           :from (lichat-tcp-client:name client)
           initargs)
    (client client)))
+
+(define-object client-widget (QObject updatable)
+  ((client :initarg :client :accessor client)
+   (main :initarg :main :accessor main))
+  (:default-initargs
+    :main (error "MAIN required.")))
+
+(defmethod open-connection ((client-widget client-widget))
+  (open-connection (client client-widget)))
+
+(defmethod close-connection ((client-widget client-widget))
+  (close-connection (client client-widget)))
+
+(define-signal (client-widget process-updates) ())
+
+(define-slot (client-widget process-updates) ()
+  (declare (connected client-widget (process-updates)))
+  (process-updates client-widget))
+
+(defmethod update ((client-widget client-widget) (update lichat-protocol:update))
+  (update (channel (main client-widget)) update))
+
+(defmethod update ((client-widget client-widget) (update lichat-protocol:channel-update))
+  (update (slot-value (main client-widget) 'user-list) update)
+  (update (find-channel (lichat-protocol:channel update) (main client-widget)) update))
+
+(defmethod update ((client-widget client-widget) (update lichat-protocol:join))
+  (when (string= (name (client client-widget)) (lichat-protocol:from update))
+    (setf (find-channel (lichat-protocol:channel update) (main client-widget))
+          (make-instance 'channel :name (lichat-protocol:channel update)
+                                  :client (client client-widget)))
+    ;; Get user listing for the new channel.
+    (qsend client-widget 'lichat-protocol:users :channel (lichat-protocol:channel update)))
+  (let ((channel (find-channel (lichat-protocol:channel update) (main client-widget))))
+    (update channel update)
+    (setf (channel (main client-widget)) channel)))
+
+(defmethod update ((client-widget client-widget) (update lichat-protocol:leave))
+  (update (find-channel (lichat-protocol:channel update) (main client-widget))
+          update)
+  (when (string= (name (client client-widget)) (lichat-protocol:from update))
+    (setf (find-channel (lichat-protocol:channel update) (main client-widget))
+          NIL)))
