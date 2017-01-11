@@ -49,11 +49,12 @@
   (enqueue-update update (main client)))
 
 (defun qsend (client type &rest initargs)
-  (enqueue-update
-   (apply #'make-instance type
-          :from (lichat-tcp-client:name client)
-          initargs)
-   (client client)))
+  (let ((client (client client)))
+    (enqueue-update
+     (apply #'make-instance type
+            :from (lichat-tcp-client:name client)
+            initargs)
+     client)))
 
 (define-object client-widget (QObject updatable)
   ((client :initarg :client :accessor client)
