@@ -50,7 +50,7 @@
   (declare (connected send (clicked)))
   (declare (connected input (confirmed)))
   (when (channel chat-area)
-    (qsend (client (main chat-area))
+    (qsend (channel chat-area)
            'lichat-protocol:message
            :channel (name (channel chat-area))
            :text (q+:to-plain-text input))

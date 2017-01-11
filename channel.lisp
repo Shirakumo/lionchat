@@ -10,11 +10,17 @@
 (defclass channel ()
   ((primary-p :initarg :primary-p :accessor primary-p)
    (name :initarg :name :accessor name)
+   (client :initarg :client :accessor client)
    (updates :initform (make-array 0 :adjustable T :fill-pointer T) :accessor updates)
    (users :initform () :accessor users))
   (:default-initargs
    :primary-p NIL
-   :name (error "NAME required.")))
+   :name (error "NAME required.")
+   :client (error "CLIENT required.")))
+
+(defmethod initialize-instance :after ((channel channel) &key client name)
+  (when (equal (server-name client) name)
+    (setf (primary-p channel) T)))
 
 (defmethod anonymous-p ((channel channel))
   (char= #\@ (char (name channel) 0)))
@@ -23,7 +29,7 @@
   (vector-push-extend update (updates channel)))
 
 (defmethod update :after ((channel channel) (update lichat-protocol:update))
-  (when (eql channel (channel (slot-value *main* 'chat-area)))
+  (when (eql channel (channel *main*))
     (update (slot-value *main* 'chat-area) update)))
 
 ;; Maintain userlist
@@ -79,7 +85,7 @@
           (channel (qui:widget-item channel-item)))
       (cond ((null-qobject-p selected))
             ((string= "Leave" (q+:text selected))
-             (qsend (client *main*) 'lichat-protocol:leave
+             (qsend channel 'lichat-protocol:leave
                     :channel (name channel)))
             ((string= "Settings" (q+:text selected))
              (with-finalizing ((settings (make-instance 'channel-settings :channel channel)))

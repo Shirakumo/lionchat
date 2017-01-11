@@ -55,8 +55,7 @@
   (when (string= (name (client main)) (lichat-protocol:from update))
     (setf (find-channel (lichat-protocol:channel update) main)
           (make-instance 'channel :name (lichat-protocol:channel update)
-                                  :primary-p (equal (server-name (client main))
-                                                    (lichat-protocol:channel update))))
+                                  :client (client main)))
     ;; Get user listing for the new channel.
     (qsend (client main) 'lichat-protocol:users :channel (lichat-protocol:channel update)))
   (let ((channel (find-channel (lichat-protocol:channel update) main)))

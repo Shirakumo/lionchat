@@ -9,9 +9,11 @@
 
 (defclass user ()
   ((name :initarg :name :accessor name)
+   (client :initarg :client :accessor client)
    (standing :initarg :standing :accessor standing))
   (:default-initargs
    :name (error "NAME required.")
+   :client (error "CLIENT required.")
    :standing :neutral))
 
 (defmethod qui:coerce-item ((user user) container)
@@ -53,16 +55,16 @@
           (user (qui:widget-item user-item)))
       (cond ((null-qobject-p selected))
             ((string= "Information" (q+:text selected))
-             (qsend (client *main*) 'lichat-protocol:user-info
+             (qsend user 'lichat-protocol:user-info
                     :target (name user)))
             ((string= "Contact" (q+:text selected))
-             (qsend (client *main*) 'lichat-protocol:create
+             (qsend user 'lichat-protocol:create
                     :channel NIL)
              ;; With response for join
-             (qsend (client *main*) 'lichat-protocol:pull
+             (qsend user 'lichat-protocol:pull
                     :channel NIL :target (name user)))
             ((string= "Kick" (q+:text selected))
-             (qsend (client *main*) 'lichat-protocol:kick
-                    :channel (active-channel *main*) :target (name user)))
+             (qsend user 'lichat-protocol:kick
+                    :channel (name (channel user)) :target (name user)))
             ((string= "Un/Friend" (q+:text selected))
              )))))

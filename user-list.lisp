@@ -39,12 +39,14 @@
     (dolist (name (lichat-protocol:users update))
       (unless (find-user name user-list)
         (setf (find-user name user-list)
-              (make-instance 'user :name name))))))
+              (make-instance 'user :name name
+                                   :client (client (main user-list))))))))
 
 (defmethod update ((user-list user-list) (update lichat-protocol:join))
   (when (primary-p (find-channel (lichat-protocol:channel update) (main user-list)))
     (setf (find-user (lichat-protocol:from update) user-list)
-          (make-instance 'user :name (lichat-protocol:from update)))))
+          (make-instance 'user :name (lichat-protocol:from update)
+                               :client (client (main user-list))))))
 
 (defmethod update ((user-list user-list) (update lichat-protocol:leave))
   (when (primary-p (find-channel (lichat-protocol:channel update) (main user-list)))
