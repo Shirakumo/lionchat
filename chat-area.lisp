@@ -84,6 +84,8 @@
           (ubiquitous:value :style :time) (format-time (lichat-protocol:clock update))
           (ubiquitous:value :style :update) (type-of update)))
 
+(defmethod show-update ((update lichat-protocol:users) (stream stream)))
+
 (defmethod show-update ((update lichat-protocol:failure) (stream stream))
   (format stream "<span style=\"color:~a\">~a</span> ~
                   <span style=\"color:~a\">* ~a</span> ~a<br>"

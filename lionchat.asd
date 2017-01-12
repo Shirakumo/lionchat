@@ -16,7 +16,6 @@
   :components ((:file "package")
                (:file "toolkit")
                (:file "settings")
-               (:file "connect")
                (:file "updatable")
                (:file "client")
                (:file "user")

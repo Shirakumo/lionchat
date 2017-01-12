@@ -23,6 +23,12 @@
   (setf (channel (slot-value main 'chat-area)) channel)
   (setf (channel (slot-value main 'user-list)) channel))
 
+(defmethod (setf clients) :after (clients (main main))
+  (let ((menu (slot-value main 'clients-menu)))
+    (q+:clear menu)
+    (dolist (client clients)
+      (q+:add-action menu (name client)))))
+
 (defmethod find-client (name (main main))
   (find name (clients main) :test #'string= :key #'name))
 
@@ -50,12 +56,16 @@
     (setf (channel main) (find-channel (lichat-protocol:channel update) (client update)))))
 
 (define-initializer (main setup)
+  ;; First-time setup
+  (unless (ubiquitous:value :setup)
+    (show-settings main :tab "Connections")
+    (setf (ubiquitous:value :setup) T))
+  ;; Populate menu
+  (update-connect-menu main)
+  ;; Autoconnect
   (loop for connection being the hash-values of (ubiquitous:value :connection)
-        when (and (listp connection)
-                  (cdr (assoc :auto connection)))
-        do (let ((initargs (alexandria:alist-plist connection)))
-             (remf initargs :auto)
-             (apply #'maybe-connect main initargs))))
+        when (and (listp connection) (cdr (assoc :auto connection)))
+        do (apply #'maybe-connect main (alexandria:alist-plist connection))))
 
 (define-finalizer (main teardown)
   (dolist (client (clients main))
@@ -78,6 +88,12 @@
   (when (ubiquitous:value :behavior :tray)
     (q+:show tray)))
 
+(define-subwidget (main clients-menu)
+    (q+:make-qmenu "&Clients"))
+
+(define-subwidget (main connect-menu)
+    (q+:make-qmenu "&Connect"))
+
 (define-override (main close-event) (ev)
   (cond ((ubiquitous:value :behavior :tray)
          (q+:hide main)
@@ -94,7 +110,18 @@
         (T
          (q+:accept ev))))
 
+(define-slot (main pick-client) ((action "QAction*"))
+  (declare (connected clients-menu (triggered "QAction*")))
+  (let ((client (find-client (q+:text action) main)))
+    (setf (channel main) (find-channel T client))))
+
+(define-slot (main pick-connection) ((action "QAction*"))
+  (declare (connected connect-menu (triggered "QAction*")))
+  (let ((client (ubiquitous:value :connection (q+:text action))))
+    (apply #'maybe-connect main (alexandria:alist-plist client))))
+
 (defun maybe-connect (main &rest args)
+  (remf args :auto)
   (handler-case
       (let ((client (apply #'make-instance 'client :main main args)))
         (if (find-client (name client) main)
@@ -106,35 +133,44 @@
                               (escape-html
                                (format NIL "Connection to ~a failed:~%~a" (getf args :name) err))))))
 
+(defun show-settings (main &rest initargs)
+  (with-slots-bound (main main)
+    (with-finalizing ((c (apply #'make-instance 'settings initargs)))
+      (when (= 1 (q+:exec c))
+        (setf (ubiquitous:value) (settings c))
+        (setf (channel main) (channel main))
+        (setf (q+:visible tray) (ubiquitous:value :behavior :tray))
+        (update-connect-menu main)))))
+
+(defun update-connect-menu (main)
+  (with-slots-bound (main main)
+    (q+:clear connect-menu)
+    (loop for k being the hash-keys of (ubiquitous:value :connection)
+          when (stringp k)
+          do (q+:add-action connect-menu k))))
+
 (define-menu (main File)
-  (:item "Connect..."
-         (with-finalizing ((c (make-instance 'connect)))
-           (when (= 1 (q+:exec c))
-             (apply #'maybe-connect main (settings c)))))
-  (:item "Disconnect"
+  (:menu connect-menu)
+  (:item "&Disconnect"
          (when (channel main)
            (close-connection (client (channel main)))))
   (:separator)
-  (:item "Settings..."
-         (with-finalizing ((c (make-instance 'settings)))
-           (when (= 1 (q+:exec c))
-             (setf (ubiquitous:value) (settings c))
-             (setf (channel main) (channel main))
-             (setf (q+:visible tray) (ubiquitous:value :behavior :tray)))))
-  (:item "Quit"
+  (:item ("&Settings..." (ctrl p))
+         (show-settings main))
+  (:item ("&Quit" (ctrl q))
          (q+:close main)
          (q+:qcoreapplication-quit)))
 
 (define-menu (main Window)
-  (:menu "Clients")
+  (:menu clients-menu)
   (:separator)
-  (:item "Channels"
+  (:item "&Channels"
          (setf (q+:visible channel-list) (not (q+:is-visible channel-list))))
-  (:item "Users"
+  (:item "&Users"
          (setf (q+:visible user-list) (not (q+:is-visible user-list)))))
 
 (define-menu (main Help)
-  (:item "About"
+  (:item "&About"
          (with-finalizing ((b (q+:make-qmessagebox)))
            (setf (q+:window-title b) "About LionChat")
            (setf (q+:text b) (system-about))

@@ -11,6 +11,13 @@
   ((behavior :initform (make-instance 'behavior-settings))
    (style :initform (make-instance 'style-settings))))
 
+(defmethod initialize-instance :after ((settings settings) &key tab)
+  (let ((tabs (slot-value settings 'tabs)))
+    (dotimes (i (q+:count tabs))
+      (when (string= tab (q+:tab-text tabs i))
+        (setf (q+:current-index tabs) i)
+        (return)))))
+
 (define-subwidget (settings behavior-widget)
     (qui:configuration-container behavior))
 
