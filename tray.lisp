@@ -38,11 +38,11 @@
 (defmethod tray-message ((tray tray) title message)
   (signal! tray (tray-message string string) title message))
 
-(define-slot (tray activated) ((reason "QSystemTrayIcon::ActivationReason"))
+;; Doesn't seem to get the signal for unknown reasons.
+(define-slot (tray clicked) ((reason "QSystemTrayIcon::ActivationReason"))
   (declare (connected tray (activated "QSystemTrayIcon::ActivationReason")))
-  ;; (when (= 3 reason)
-  ;;   (setf (q+:visible (main tray)) (not (q+:is-visible (main tray)))))
-  )
+  (when (= 3 reason)
+    (setf (q+:visible (main tray)) (not (q+:is-visible (main tray))))))
 
 (define-slot (tray show) ()
   (declare (connected show (triggered)))
