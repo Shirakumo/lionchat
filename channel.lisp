@@ -25,22 +25,18 @@
 (defmethod anonymous-p ((channel channel))
   (char= #\@ (char (name channel) 0)))
 
-(defmethod update ((channel channel) (update lichat-protocol:update))
+(defmethod process ((update lichat-protocol:update) (channel channel))
   (vector-push-extend update (updates channel)))
 
-(defmethod update :after ((channel channel) (update lichat-protocol:update))
-  (when (eql channel (channel *main*))
-    (update (slot-value *main* 'chat-area) update)))
-
 ;; Maintain userlist
-(defmethod update ((channel channel) (update lichat-protocol:users))
+(defmethod process ((update lichat-protocol:users) (channel channel))
   (setf (users channel) (loop for user in (lichat-protocol:users update)
-                              collect (find-user user *main*))))
+                              collect (find-user user (client channel)))))
 
-(defmethod update :after ((channel channel) (update lichat-protocol:join))
-  (pushnew (find-user (lichat-protocol:from update) *main*) (users channel)))
+(defmethod process :after ((update lichat-protocol:join) (channel channel))
+  (pushnew (find-user (lichat-protocol:from update) (client channel)) (users channel)))
 
-(defmethod update :after ((channel channel) (update lichat-protocol:leave))
+(defmethod process :after ((update lichat-protocol:leave) (channel channel))
   (setf (users channel) (remove (lichat-protocol:from update) (users channel)
                                 :key #'name :test #'string=)))
 
@@ -55,8 +51,10 @@
   (declare (ignore x y))
   (setf (channel *main*) (qui:widget-item channel-item)))
 
-(define-subwidget (channel-item name)
-    (q+:make-qlabel (name (qui:widget-item channel-item))))
+(define-subwidget (channel-item name) (q+:make-qlabel)
+  (let ((channel (qui:widget-item channel-item)))
+    (setf (q+:text name) (name channel))
+    (setf (q+:tool-tip name) (format NIL "~a/~a" (name channel) (name (client channel))))))
 
 (define-subwidget (channel-item type)
     (q+:make-qlabel (cond ((primary-p (qui:widget-item channel-item))

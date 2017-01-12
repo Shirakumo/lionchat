@@ -23,16 +23,17 @@
   ()
   (:default-initargs :draw-item NIL))
 
-(define-subwidget (user-item name)
-    (q+:make-qlabel (name (qui:widget-item user-item)))
-  (setf (q+:style-sheet name) (format NIL "color:~a;"
-                                      (object-color (name (qui:widget-item user-item))))))
+(define-subwidget (user-item name) (q+:make-qlabel)
+  (let ((user (qui:widget-item user-item)))
+    (setf (q+:text name) (name user))
+    (setf (q+:tool-tip name) (format NIL "~a/~a" (name user) (name (client user))))
+    (setf (q+:style-sheet name) (format NIL "color:~a;" (object-color (name user))))))
 
 (define-subwidget (user-item type)
     (q+:make-qlabel (case (standing (qui:widget-item user-item))
                       (:neutral "")
                       (:muted "_")
-                      (:friend "@")))
+                      (:friend "+")))
   (setf (q+:fixed-width type) 20))
 
 (define-subwidget (user-item layout) (q+:make-qhboxlayout user-item)
@@ -65,6 +66,6 @@
                     :channel NIL :target (name user)))
             ((string= "Kick" (q+:text selected))
              (qsend user 'lichat-protocol:kick
-                    :channel (name (channel user)) :target (name user)))
+                    :channel (name (channel *main*)) :target (name user)))
             ((string= "Un/Friend" (q+:text selected))
              )))))

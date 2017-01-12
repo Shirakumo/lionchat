@@ -7,6 +7,21 @@
 (in-package #:org.shirakumo.lichat.lionchat)
 (in-readtable :qtools)
 
+(defmacro setf-named (list name new)
+  (let ((newg (gensym "NEW")) (listg (gensym "LIST"))
+        (nameg (gensym "NAME")) (prevg (gensym "PREV")))
+    `(let* ((,newg ,new)
+            (,listg ,list)
+            (,nameg ,name)
+            (,prevg (find ,nameg ,listg :key #'name :test #'string=)))
+       (unless (eql ,newg ,prevg)
+         (setf ,listg (remove ,prevg ,listg))
+         (when ,newg
+           (setf ,listg (sort (list* ,newg ,listg)
+                              #'string< :key #'name)))
+         (setf ,list ,listg))
+       ,newg)))
+
 (defun machine-user ()
   (let ((path (user-homedir-pathname)))
     (if (cdr (pathname-directory path))
@@ -46,6 +61,17 @@
    *url-regex*
    text
    "<a href=\"\\1\">\\1</a>"))
+
+(defun escape-html (html)
+  (with-output-to-string (stream)
+    (loop for c across html
+          do (case c
+               (#\< (write-string "&lt;" stream))
+               (#\> (write-string "&gt;" stream))
+               (#\" (write-string "&quot;" stream))
+               (#\& (write-string "&amp;" stream))
+               (#\Newline (write-string "<br>" stream))
+               (T (write-char c stream))))))
 
 (defun object-color (object)
   (let* ((hash (sxhash object))

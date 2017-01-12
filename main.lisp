@@ -10,16 +10,11 @@
 (defvar *main* NIL)
 
 (define-widget main (QMainWindow updatable)
-  ((client :initform NIL :accessor client)))
+  ((clients :initform NIL :accessor clients)
+   (exiting :initform NIL :accessor exiting)))
 
 (defmethod initialize-instance :before ((main main) &key)
   (setf *main* main))
-
-(defmethod find-channel (name (main main))
-  (find-channel name (slot-value main 'channel-list)))
-
-(defmethod (setf find-channel) (value name (main main))
-  (setf (find-channel name (slot-value main 'channel-list)) value))
 
 (defmethod channel ((main main))
   (channel (slot-value main 'chat-area)))
@@ -29,11 +24,11 @@
   (setf (channel (slot-value main 'chat-area)) channel)
   (setf (channel (slot-value main 'user-list)) channel))
 
-(defmethod find-user (name (main main))
-  (find-user name (slot-value main 'user-list)))
+(defmethod find-client (name (main main))
+  (find name (clients main) :test #'string= :key #'name))
 
-(defmethod (setf find-user) (value name (main main))
-  (setf (find-user name (slot-value main 'user-list)) value))
+(defmethod (setf find-client) (value name (main main))
+  (setf-named (clients main) name value))
 
 (defmethod enqueue-update :after (update (main main))
   (signal! main (process-updates)))
@@ -45,33 +40,19 @@
   (process-updates main))
 
 (defmethod update ((main main) (update lichat-protocol:update))
-  (update (channel main) update))
+  ;; FIXME: Queue for awaiting events from the GUI
+  (update (slot-value main 'channel-list) update)
+  (update (slot-value main 'chat-area) update)
+  (update (slot-value main 'user-list) update))
 
-(defmethod update ((main main) (update lichat-protocol:channel-update))
-  (update (slot-value main 'user-list) update)
-  (update (find-channel (lichat-protocol:channel update) main) update))
-
-(defmethod update ((main main) (update lichat-protocol:join))
-  (when (string= (username (client main)) (lichat-protocol:from update))
-    (setf (find-channel (lichat-protocol:channel update) main)
-          (make-instance 'channel :name (lichat-protocol:channel update)
-                                  :client (client main)))
-    ;; Get user listing for the new channel.
-    (qsend (client main) 'lichat-protocol:users :channel (lichat-protocol:channel update)))
-  (let ((channel (find-channel (lichat-protocol:channel update) main)))
-    (update channel update)
-    (setf (channel main) channel)))
-
-(defmethod update ((main main) (update lichat-protocol:leave))
-  (update (find-channel (lichat-protocol:channel update) main)
-          update)
-  (when (string= (username (client main)) (lichat-protocol:from update))
-    (setf (find-channel (lichat-protocol:channel update) main)
-          NIL)))
+(defmethod update :after ((main main) (update lichat-protocol:join))
+  (when (string= (username (client update))
+                 (lichat-protocol:from update))
+    (setf (channel main) (find-channel (lichat-protocol:channel update) (client update)))))
 
 (define-finalizer (main teardown)
-  (when (client main)
-    (close-connection (client main))))
+  (dolist (client (clients main))
+    (close-connection client)))
 
 (define-subwidget (main channel-list)
     (make-instance 'channel-list :main main)
@@ -90,29 +71,48 @@
   (when (ubiquitous:value :behavior :tray)
     (q+:show tray)))
 
+(define-override (main close-event) (ev)
+  (cond ((and (not (exiting main)) (ubiquitous:value :behavior :tray))
+         (q+:hide main)
+         (q+:ignore ev))
+        (T
+         (q+:accept ev))))
+
+(define-override (main change-event) (ev)
+  (cond ((ubiquitous:value :behavior :tray)
+         (when (and (enum-equal (q+:qevent.window-state-change) (q+:type ev))
+                    (q+:is-minimized main))
+           (q+:hide main))
+         (q+:ignore ev))
+        (T
+         (q+:accept ev))))
+
 (define-menu (main File)
   (:item "Connect..."
-         (when (client main)
-           (close-connection (client main)))
          (with-finalizing ((c (make-instance 'connect)))
-           (when (q+:exec c)
-             (let ((client (apply #'make-instance 'client :main main (settings c))))
-               (handler-case (setf (client main) (open-connection client))
-                 (error (err)
-                   (q+:qmessagebox-warning main "Lionchat Error"
-                                           (format NIL "Connection failed: ~a" err))))))))
+           (when (= 1 (q+:exec c))
+             (handler-case
+                 (let ((client (apply #'make-instance 'client :main main (settings c))))
+                   (if (find-client (name client) main)
+                       (error "A connection named ~s already exists." (name client))
+                       (setf (find-client (name client) main)
+                             (open-connection client))))
+               (error (err)
+                 (q+:qmessagebox-warning main "Lionchat Error"
+                                         (escape-html
+                                          (format NIL "Connection failed:~%~a" err))))))))
   (:item "Disconnect"
-         (when (client main)
-           (close-connection (client main))
-           (setf (client main) NIL)))
+         (when (channel main)
+           (close-connection (client (channel main)))))
   (:separator)
   (:item "Settings..."
          (with-finalizing ((c (make-instance 'settings)))
-           (when (q+:exec c)
+           (when (= 1 (q+:exec c))
              (setf (ubiquitous:value) (settings c))
              (setf (channel main) (channel main))
              (setf (q+:visible tray) (ubiquitous:value :behavior :tray)))))
   (:item "Quit"
+         (setf (exiting main) T)
          (q+:close main)))
 
 (define-menu (main Window)

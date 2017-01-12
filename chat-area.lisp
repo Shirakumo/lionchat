@@ -16,6 +16,7 @@
   (setf (q+:enabled (slot-value chat-area 'send)) thing))
 
 (defmethod update ((chat-area chat-area) thing)
+  ;; FIXME: Test if matches channel
   (update (slot-value chat-area 'output) thing))
 
 (define-subwidget (chat-area output)
@@ -87,7 +88,7 @@
   (format stream "<span style=\"color:~a\">~a</span> ~
                   <span style=\"color:~a\">* ~a</span> ~a<br>"
           (ubiquitous:value :style :time) (format-time (lichat-protocol:clock update))
-          (ubiquitous:value :style :error) (type-of update) (lichat-protocol:text update)))
+          (ubiquitous:value :style :error) (type-of update) (escape-html (lichat-protocol:text update))))
 
 (defmethod show-update ((update lichat-protocol:message) (stream stream))
   (format stream "<span style=\"color:~a\">~a</span> ~
@@ -97,7 +98,7 @@
           (object-color (lichat-protocol:from update))
           (lichat-protocol:from update) (format-name (lichat-protocol:from update))
           (ubiquitous:value :style :text)
-          (linkify-urls (cl-ppcre:regex-replace-all "\\n" (lichat-protocol:text update) "<br>"))))
+          (linkify-urls (escape-html (lichat-protocol:text update)))))
 
 (defun show-update-action (update stream msg &rest args)
   (format stream "<span style=\"color:~a\">~a</span> ~

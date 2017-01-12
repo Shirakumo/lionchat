@@ -11,24 +11,21 @@
   ((main :initarg :main :accessor main)
    (channels :initform () :accessor channels)))
 
-(defmethod find-channel (name (channel-list channel-list))
-  (if (eql name T)
-      (find T (channels channel-list) :key #'primary-p)
-      (find name (channels channel-list) :key #'name :test #'string-equal)))
-
-(defmethod (setf find-channel) (value name (channel-list channel-list))
-  (let ((prev (find-channel name channel-list))
-        (channels (channels channel-list)))
-    (unless (eql value prev)
-      (setf channels (remove prev channels))
-      (when value
-        (setf channels (sort (list* value channels)
-                             #'string< :key #'name)))
-      (setf (channels channel-list) channels)))
-  value)
-
 (defmethod (setf channels) :after (value (channel-list channel-list))
   (update-listing channel-list))
+
+(defmethod update ((channel-list channel-list) (update lichat-protocol:join))
+  (when (string= (lichat-protocol:from update)
+                 (username (client update)))
+    (pushnew (find-channel (lichat-protocol:channel update) (client update))
+             (channels channel-list))))
+
+(defmethod update ((channel-list channel-list) (update lichat-protocol:leave))
+  (when (string= (lichat-protocol:from update)
+                 (username (client update)))
+    (setf (channels channel-list)
+          (remove (find-channel (lichat-protocol:channel update) (client update))
+                  (channels channel-list)))))
 
 (define-initializer (channel-list setup)
   (setf (q+:features channel-list) (q+:qdockwidget.dock-widget-movable))
@@ -79,7 +76,7 @@
   (declare (connected join (clicked)))
   (let ((name (q+:text channelname)))
     (when (string/= "" name)
-      (qsend (client (main channel-list))
+      (qsend (channel channel-list)
              'lichat-protocol:join
              :channel name)
       (setf (q+:text channelname) ""))))
@@ -88,7 +85,7 @@
   (declare (connected create (clicked)))
   (let ((name (q+:text channelname)))
     (when (string/= "" name)
-      (qsend (client (main channel-list))
+      (qsend (channel channel-list)
              'lichat-protocol:create
              :channel name)
       (setf (q+:text channelname) ""))))

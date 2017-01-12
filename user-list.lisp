@@ -9,48 +9,20 @@
 
 (define-widget user-list (QDockWidget)
   ((main :initarg :main :accessor main)
-   (channel :initform NIL :accessor channel)
-   (users :initform NIL :accessor users)))
-
-(defmethod find-user (name (user-list user-list))
-  (find name (users user-list) :key #'name :test #'string-equal))
-
-(defmethod (setf find-user) (value name (user-list user-list))
-  (let ((prev (find-user name user-list))
-        (users (users user-list)))
-    (unless (eql value prev)
-      (setf users (remove prev users))
-      (when value
-        (setf users (sort (list* value users)
-                          #'string< :key #'name)))
-      (setf (users user-list) users)))
-  value)
-
-(defmethod (setf users) :after (users (user-list user-list))
-  (update-listing user-list))
+   (channel :initform NIL :accessor channel)))
 
 (defmethod (setf channel) :after (channel (user-list user-list))
   (update-listing user-list))
 
-(defmethod update ((user-list user-list) update))
-
-(defmethod update ((user-list user-list) (update lichat-protocol:users))
-  (when (primary-p (find-channel (lichat-protocol:channel update) (main user-list)))
-    (dolist (name (lichat-protocol:users update))
-      (unless (find-user name user-list)
-        (setf (find-user name user-list)
-              (make-instance 'user :name name
-                                   :client (client (main user-list))))))))
-
-(defmethod update ((user-list user-list) (update lichat-protocol:join))
-  (when (primary-p (find-channel (lichat-protocol:channel update) (main user-list)))
-    (setf (find-user (lichat-protocol:from update) user-list)
-          (make-instance 'user :name (lichat-protocol:from update)
-                               :client (client (main user-list))))))
-
-(defmethod update ((user-list user-list) (update lichat-protocol:leave))
-  (when (primary-p (find-channel (lichat-protocol:channel update) (main user-list)))
-    (setf (find-user (lichat-protocol:from update) user-list) NIL)))
+(defmethod update ((user-list user-list) update)
+  (typecase update
+    ((or lichat-protocol:join
+         lichat-protocol:leave
+         lichat-protocol:users)
+     (when (channel user-list)
+       (when (string= (lichat-protocol:channel update)
+                      (name (channel user-list)))
+         (setf (channel user-list) (channel user-list)))))))
 
 (define-initializer (user-list setup)
   (setf (q+:features user-list) (q+:qdockwidget.dock-widget-movable))
