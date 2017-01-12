@@ -45,6 +45,7 @@
 
 (define-subwidget (settings layout)
     (q+:make-qgridlayout settings)
+  (setf (q+:window-title settings) "Lionchat Settings")
   (q+:resize settings 600 400)
   (q+:add-widget layout tabs 0 0 1 2)
   (q+:add-widget layout ok 1 0 1 1)
@@ -111,6 +112,7 @@
 (define-subwidget (connections-settings list) (q+:make-qlistwidget))
 
 (define-subwidget (connections-settings add) (q+:make-qpushbutton "+")
+  (setf (q+:default add) T)
   (setf (q+:minimum-width add) 20)
   (setf (q+:size-policy add) (values (q+:qsizepolicy.maximum)
                                      (q+:qsizepolicy.maximum))))
