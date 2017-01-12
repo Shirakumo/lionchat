@@ -10,8 +10,7 @@
 (defvar *main* NIL)
 
 (define-widget main (QMainWindow updatable)
-  ((clients :initform NIL :accessor clients)
-   (exiting :initform NIL :accessor exiting)))
+  ((clients :initform NIL :accessor clients)))
 
 (defmethod initialize-instance :before ((main main) &key)
   (setf *main* main))
@@ -72,7 +71,7 @@
     (q+:show tray)))
 
 (define-override (main close-event) (ev)
-  (cond ((and (not (exiting main)) (ubiquitous:value :behavior :tray))
+  (cond ((ubiquitous:value :behavior :tray)
          (q+:hide main)
          (q+:ignore ev))
         (T
@@ -112,10 +111,12 @@
              (setf (channel main) (channel main))
              (setf (q+:visible tray) (ubiquitous:value :behavior :tray)))))
   (:item "Quit"
-         (setf (exiting main) T)
-         (q+:close main)))
+         (q+:close main)
+         (q+:qcoreapplication-quit)))
 
 (define-menu (main Window)
+  (:menu "Clients")
+  (:separator)
   (:item "Channels"
          (setf (q+:visible channel-list) (not (q+:is-visible channel-list))))
   (:item "Users"
@@ -146,4 +147,5 @@ Version: ~a"
   (let ((*package* #.*package*))
     (v:output-here)
     (default-configuration)
+    (q+:qapplication-set-quit-on-last-window-closed NIL)
     (with-main-window (main 'main :name "Lionchat"))))
