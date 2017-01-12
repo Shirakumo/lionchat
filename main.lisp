@@ -49,6 +49,14 @@
                  (lichat-protocol:from update))
     (setf (channel main) (find-channel (lichat-protocol:channel update) (client update)))))
 
+(define-initializer (main setup)
+  (loop for connection being the hash-values of (ubiquitous:value :connection)
+        when (and (listp connection)
+                  (cdr (assoc :auto connection)))
+        do (let ((initargs (alexandria:alist-plist connection)))
+             (remf initargs :auto)
+             (apply #'maybe-connect main initargs))))
+
 (define-finalizer (main teardown)
   (dolist (client (clients main))
     (close-connection client)))
@@ -86,20 +94,23 @@
         (T
          (q+:accept ev))))
 
+(defun maybe-connect (main &rest args)
+  (handler-case
+      (let ((client (apply #'make-instance 'client :main main args)))
+        (if (find-client (name client) main)
+            (error "A connection named ~s already exists." (name client))
+            (setf (find-client (name client) main)
+                  (open-connection client))))
+    (error (err)
+      (q+:qmessagebox-warning main "Lionchat Error"
+                              (escape-html
+                               (format NIL "Connection to ~a failed:~%~a" (getf args :name) err))))))
+
 (define-menu (main File)
   (:item "Connect..."
          (with-finalizing ((c (make-instance 'connect)))
            (when (= 1 (q+:exec c))
-             (handler-case
-                 (let ((client (apply #'make-instance 'client :main main (settings c))))
-                   (if (find-client (name client) main)
-                       (error "A connection named ~s already exists." (name client))
-                       (setf (find-client (name client) main)
-                             (open-connection client))))
-               (error (err)
-                 (q+:qmessagebox-warning main "Lionchat Error"
-                                         (escape-html
-                                          (format NIL "Connection failed:~%~a" err))))))))
+             (apply #'maybe-connect main (settings c)))))
   (:item "Disconnect"
          (when (channel main)
            (close-connection (client (channel main)))))

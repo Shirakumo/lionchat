@@ -51,17 +51,14 @@
 
 (qui:define-configurable behavior-settings ()
   ((tray :initarg :tray :option (boolean :title "Minimize to Tray"))
-   (connect :initarg :connect :option (boolean :title "Connect on Startup"))
    (sound :initarg :sound :option (boolean :title "Play Sounds")))
   (:default-initargs
    :tray (ubiquitous:value :behavior :tray)
-   :connect (ubiquitous:value :behavior :connect)
    :sound (ubiquitous:value :behavior :sound)))
 
 (defmethod settings ((settings behavior-settings))
   (with-slots-bound (settings behavior-settings)
     `((:tray .,tray)
-      (:connect .,connect)
       (:sound .,sound))))
 
 (qui:define-configurable style-settings ()
@@ -127,11 +124,16 @@
   (q+:add-widget layout main   0 2 2 1)
   (setf (q+:column-stretch layout) (values 2 1)))
 
+(defmethod (setf connections) :around (connections (connections-settings connections-settings))
+  (call-next-method (sort connections #'string< :key #'name) connections-settings))
+
 (defmethod (setf connections) :after (connections (connections-settings connections-settings))
   (with-slots-bound (connections-settings connections-settings)
-    (q+:clear list)
-    (dolist (connection connections)
-      (q+:add-item list (name connection)))))
+    (let ((row (q+:current-row list)))
+      (q+:clear list)
+      (dolist (connection connections)
+        (q+:add-item list (name connection)))
+      (setf (q+:current-row list) (min row (1- (length connections)))))))
 
 (define-slot (connections-settings current) ((name string))
   (declare (connected list (current-text-changed string)))
@@ -146,8 +148,7 @@
 (define-slot (connections-settings add) ()
   (declare (connected add (clicked)))
   (push (make-instance 'connection-settings :name "")
-        (connections connections-settings))
-  ())
+        (connections connections-settings)))
 
 (define-slot (connections-settings remove) ()
   (declare (connected remove (clicked)))
@@ -170,13 +171,15 @@
    (hostname :initarg :hostname :option (qui:string :title "Hostname"))
    (port :initarg :port :option (qui:integer :title "Port" :min 1 :max 65535))
    (username :initarg :username :option (qui:string :title "Username"))
-   (password :initarg :password :option (qui:password :title "Password")))
+   (password :initarg :password :option (qui:password :title "Password"))
+   (auto :initarg :auto :option (qui:boolean :title "Autoconnect")))
   (:default-initargs
    :name ""
    :hostname (ubiquitous:value :connection :default :hostname)
    :port (ubiquitous:value :connection :default :port)
    :username (ubiquitous:value :connection :default :username)
-   :password (ubiquitous:value :connection :default :password)))
+   :password (ubiquitous:value :connection :default :password)
+   :auto (ubiquitous:value :connection :default :auto)))
 
 (defmethod settings ((settings connection-settings))
   (with-slots-bound (settings connection-settings)
@@ -184,7 +187,8 @@
       (:hostname .,hostname)
       (:port .,port)
       (:username .,username)
-      (:password .,password))))
+      (:password .,password)
+      (:auto .,auto))))
 
 (defun default-configuration ()
   (ubiquitous:restore :lionchat)
@@ -192,8 +196,8 @@
   (ubiquitous:defaulted-value lichat-tcp-client:*default-port* :connection :default :port)
   (ubiquitous:defaulted-value (machine-user) :connection :default :username)
   (ubiquitous:defaulted-value "" :connection :default :password)
+  (ubiquitous:defaulted-value NIL :connection :default :auto)
   (ubiquitous:defaulted-value T :behavior :tray)
-  (ubiquitous:defaulted-value T :behavior :connect)
   (ubiquitous:defaulted-value T :behavior :sound)
   (ubiquitous:defaulted-value "#EEE" :style :text)
   (ubiquitous:defaulted-value "#CCC" :style :time)
