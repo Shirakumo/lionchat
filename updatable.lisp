@@ -12,8 +12,7 @@
    (back-queue :initform (make-array 0 :adjustable T :fill-pointer T) :accessor back-queue)
    (lock :initform (bt:make-lock) :accessor lock)))
 
-(defmethod update ((updatable updatable) update)
-  (error "Unknown update ~s for ~s." update updatable))
+(defmethod update (target update))
 
 (defmethod enqueue-update (update (updatable updatable))
   (bt:with-lock-held ((lock updatable))
