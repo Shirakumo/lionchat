@@ -91,6 +91,10 @@
 
 (defun default-configuration ()
   (ubiquitous:restore :lionchat)
+  (ubiquitous:defaulted-value "localhost" :connection :hostname)
+  (ubiquitous:defaulted-value lichat-tcp-client:*default-port* :connection :port)
+  (ubiquitous:defaulted-value (machine-user) :connection :username)
+  (ubiquitous:defaulted-value "" :connection :password)
   (ubiquitous:defaulted-value T :behavior :tray)
   (ubiquitous:defaulted-value T :behavior :connect)
   (ubiquitous:defaulted-value T :behavior :sound)

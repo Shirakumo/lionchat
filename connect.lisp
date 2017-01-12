@@ -16,10 +16,10 @@
 (define-widget connect (QDialog)
   ()
   (:default-initargs
-    :hostname "localhost"
-    :port lichat-tcp-client:*default-port*
-    :username (machine-user)
-    :password ""))
+    :hostname (ubiquitous:value :connection :hostname)
+    :port (ubiquitous:value :connection :port)
+    :username (ubiquitous:value :connection :username)
+    :password (ubiquitous:value :connection :password)))
 
 (defmethod initialize-instance :after ((connect connect) &key hostname port username password)
   (setf (q+:text (slot-value connect 'hostname)) hostname)
