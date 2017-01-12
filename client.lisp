@@ -52,7 +52,7 @@
   (let ((client (client client)))
     (enqueue-update
      (apply #'make-instance type
-            :from (lichat-tcp-client:name client)
+            :from (username client)
             initargs)
      client)))
 
@@ -82,7 +82,7 @@
   (update (find-channel (lichat-protocol:channel update) (main client-widget)) update))
 
 (defmethod update ((client-widget client-widget) (update lichat-protocol:join))
-  (when (string= (name (client client-widget)) (lichat-protocol:from update))
+  (when (string= (username (client client-widget)) (lichat-protocol:from update))
     (setf (find-channel (lichat-protocol:channel update) (main client-widget))
           (make-instance 'channel :name (lichat-protocol:channel update)
                                   :client (client client-widget)))
@@ -95,6 +95,6 @@
 (defmethod update ((client-widget client-widget) (update lichat-protocol:leave))
   (update (find-channel (lichat-protocol:channel update) (main client-widget))
           update)
-  (when (string= (name (client client-widget)) (lichat-protocol:from update))
+  (when (string= (username (client client-widget)) (lichat-protocol:from update))
     (setf (find-channel (lichat-protocol:channel update) (main client-widget))
           NIL)))

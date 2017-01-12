@@ -52,7 +52,7 @@
   (update (find-channel (lichat-protocol:channel update) main) update))
 
 (defmethod update ((main main) (update lichat-protocol:join))
-  (when (string= (name (client main)) (lichat-protocol:from update))
+  (when (string= (username (client main)) (lichat-protocol:from update))
     (setf (find-channel (lichat-protocol:channel update) main)
           (make-instance 'channel :name (lichat-protocol:channel update)
                                   :client (client main)))
@@ -65,7 +65,7 @@
 (defmethod update ((main main) (update lichat-protocol:leave))
   (update (find-channel (lichat-protocol:channel update) main)
           update)
-  (when (string= (name (client main)) (lichat-protocol:from update))
+  (when (string= (username (client main)) (lichat-protocol:from update))
     (setf (find-channel (lichat-protocol:channel update) main)
           NIL)))
 

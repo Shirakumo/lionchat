@@ -66,6 +66,6 @@
   (with-slots-bound (connect connect)
     (list :hostname (q+:text hostname)
           :port (q+:value port)
-          :name (q+:text username)
+          :username (q+:text username)
           :password (when (string/= "" (q+:text password))
                       (q+:text password)))))
