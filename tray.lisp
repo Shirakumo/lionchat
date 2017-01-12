@@ -41,7 +41,7 @@
 ;; Doesn't seem to get the signal for unknown reasons.
 (define-slot (tray clicked) ((reason "QSystemTrayIcon::ActivationReason"))
   (declare (connected tray (activated "QSystemTrayIcon::ActivationReason")))
-  (when (= 3 reason)
+  (when (= 3 (enum-value reason))
     (setf (q+:visible (main tray)) (not (q+:is-visible (main tray))))))
 
 (define-slot (tray show) ()
