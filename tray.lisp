@@ -13,10 +13,10 @@
 (define-subwidget (tray show) (q+:make-qaction "&Show/Hide" tray))
 
 (define-subwidget (tray settings) (q+:make-qaction "&Settings" tray)
-  (connect settings "triggered()" (main tray) "m_SettingsActionSlot()"))
+  (connect settings "triggered()" (main tray) "m_SettingsCTRLPActionSlot()"))
 
 (define-subwidget (tray quit) (q+:make-qaction "&Quit" tray)
-  (connect quit "triggered()" (main tray) "m_QuitActionSlot()"))
+  (connect quit "triggered()" (main tray) "m_QuitCTRLQActionSlot()"))
 
 (define-subwidget (tray menu) (q+:make-qmenu)
   (q+:add-action menu show)
