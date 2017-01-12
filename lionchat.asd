@@ -26,7 +26,8 @@
                (:file "chat-area")
                (:file "tray")
                (:file "main"))
-  :depends-on (:lichat-tcp-client
+  :depends-on (:alexandria
+               :lichat-tcp-client
                :qtools-ui-listing
                :qtools-ui-options
                :qtools

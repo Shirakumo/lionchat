@@ -17,11 +17,15 @@
 (define-subwidget (settings style-widget)
     (qui:configuration-container style))
 
+(define-subwidget (settings connections-settings)
+    (make-instance 'connections-settings))
+
 (define-subwidget (settings tabs)
     (q+:make-qtabwidget)
   (setf (q+:tabs-closable tabs) NIL)
   (q+:add-tab tabs behavior-widget "Behaviour")
-  (q+:add-tab tabs style-widget "Style"))
+  (q+:add-tab tabs style-widget "Style")
+  (q+:add-tab tabs connections-settings "Connections"))
 
 (define-subwidget (settings ok)
     (q+:make-qpushbutton "Save")
@@ -34,7 +38,7 @@
 
 (define-subwidget (settings layout)
     (q+:make-qgridlayout settings)
-  (q+:resize settings 300 400)
+  (q+:resize settings 600 400)
   (q+:add-widget layout tabs 0 0 1 2)
   (q+:add-widget layout ok 1 0 1 1)
   (q+:add-widget layout cancel 1 1 1 1))
@@ -42,7 +46,8 @@
 (defmethod settings ((settings settings))
   (with-slots-bound (settings settings)
     `((:behavior .,(settings behavior))
-      (:style .,(settings style)))))
+      (:style .,(settings style))
+      (:connection .,(settings connections-settings)))))
 
 (qui:define-configurable behavior-settings ()
   ((tray :initarg :tray :option (boolean :title "Minimize to Tray"))
@@ -88,6 +93,98 @@
         (:error .,(convert-color error))
         (:update .,(convert-color update))
         (:format .,format)))))
+
+(define-widget connections-settings (QWidget)
+  ((connections :initform () :accessor connections)))
+
+(define-initializer (connections-settings setup)
+  (setf (connections connections-settings)
+        (loop for connection being the hash-values of (ubiquitous:value :connection)
+              when (listp connection)
+              collect (apply #'make-instance 'connection-settings
+                             (alexandria:alist-plist connection)))))
+
+(define-subwidget (connections-settings list) (q+:make-qlistwidget))
+
+(define-subwidget (connections-settings add) (q+:make-qpushbutton "+")
+  (setf (q+:minimum-width add) 20)
+  (setf (q+:size-policy add) (values (q+:qsizepolicy.maximum)
+                                     (q+:qsizepolicy.maximum))))
+
+(define-subwidget (connections-settings remove) (q+:make-qpushbutton "-")
+  (setf (q+:minimum-width remove) 20)
+  (setf (q+:size-policy remove) (values (q+:qsizepolicy.maximum)
+                                      (q+:qsizepolicy.maximum))))
+
+(define-subwidget (connections-settings main) (q+:make-qwidget)
+  (setf (q+:size-policy main) (values (q+:qsizepolicy.minimum)
+                                      (q+:qsizepolicy.minimum))))
+
+(define-subwidget (connections-settings layout) (q+:make-qgridlayout connections-settings)
+  (q+:add-widget layout list   0 0 1 2)
+  (q+:add-widget layout add    1 0 1 1)
+  (q+:add-widget layout remove 1 1 1 1)
+  (q+:add-widget layout main   0 2 2 1)
+  (setf (q+:column-stretch layout) (values 2 1)))
+
+(defmethod (setf connections) :after (connections (connections-settings connections-settings))
+  (with-slots-bound (connections-settings connections-settings)
+    (q+:clear list)
+    (dolist (connection connections)
+      (q+:add-item list (name connection)))))
+
+(define-slot (connections-settings current) ((name string))
+  (declare (connected list (current-text-changed string)))
+  (let ((prev main)
+        (new (find name connections :key #'name :test #'string=)))
+    (when new
+      (setf main (qui:configuration-container new))
+      (q+:remove-widget layout prev)
+      (finalize prev)
+      (q+:add-widget layout main 0 2 2 1))))
+
+(define-slot (connections-settings add) ()
+  (declare (connected add (clicked)))
+  (push (make-instance 'connection-settings :name "")
+        (connections connections-settings))
+  ())
+
+(define-slot (connections-settings remove) ()
+  (declare (connected remove (clicked)))
+  (let ((current (q+:current-item list)))
+    (unless (null-qobject-p current)
+      (setf (connections connections-settings)
+            (remove (q+:text current) (connections connections-settings)
+                    :key #'name :test #'string=)))))
+
+(defmethod settings ((settings connections-settings))
+  (with-slots-bound (settings connections-settings)
+    (let ((table (make-hash-table :test 'equal)))
+      (setf (gethash :default table) (ubiquitous:value :connection :default))
+      (dolist (connection connections table)
+        (setf (gethash (name connection) table)
+              (settings connection))))))
+
+(qui:define-configurable connection-settings ()
+  ((name :initarg :name :accessor name :option (qui:string :title "Name"))
+   (hostname :initarg :hostname :option (qui:string :title "Hostname"))
+   (port :initarg :port :option (qui:integer :title "Port" :min 1 :max 65535))
+   (username :initarg :username :option (qui:string :title "Username"))
+   (password :initarg :password :option (qui:password :title "Password")))
+  (:default-initargs
+   :name ""
+   :hostname (ubiquitous:value :connection :default :hostname)
+   :port (ubiquitous:value :connection :default :port)
+   :username (ubiquitous:value :connection :default :username)
+   :password (ubiquitous:value :connection :default :password)))
+
+(defmethod settings ((settings connection-settings))
+  (with-slots-bound (settings connection-settings)
+    `((:name .,name)
+      (:hostname .,hostname)
+      (:port .,port)
+      (:username .,username)
+      (:password .,password))))
 
 (defun default-configuration ()
   (ubiquitous:restore :lionchat)
