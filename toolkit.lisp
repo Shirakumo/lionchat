@@ -7,6 +7,12 @@
 (in-package #:org.shirakumo.lichat.lionchat)
 (in-readtable :qtools)
 
+(defun machine-user ()
+  (let ((path (user-homedir-pathname)))
+    (if (cdr (pathname-directory path))
+        (car (last (pathname-directory path)))
+        (machine-instance))))
+
 (defun format-time (stamp &optional (format "h:m:s"))
   (let ((stamp (etypecase stamp
                  (local-time:timestamp stamp)

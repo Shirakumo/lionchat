@@ -9,8 +9,11 @@
 
 (defclass client (lichat-tcp-client:client updatable)
   ((main :initarg :main :accessor main)
+   (name :initarg :name :accessor name)
    (server-name :initform NIL :accessor server-name)
-   (send-thread :initform NIL :accessor send-thread)))
+   (send-thread :initform NIL :accessor send-thread))
+  (:default-initargs
+   :name (error "NAME required.")))
 
 (defmethod client ((client client))
   client)

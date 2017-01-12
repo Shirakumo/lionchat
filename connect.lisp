@@ -7,25 +7,24 @@
 (in-package #:org.shirakumo.lichat.lionchat)
 (in-readtable :qtools)
 
-(defun machine-user ()
-  (let ((path (user-homedir-pathname)))
-    (if (cdr (pathname-directory path))
-        (car (last (pathname-directory path)))
-        (machine-instance))))
-
 (define-widget connect (QDialog)
   ()
   (:default-initargs
-    :hostname (ubiquitous:value :connection :hostname)
-    :port (ubiquitous:value :connection :port)
-    :username (ubiquitous:value :connection :username)
-    :password (ubiquitous:value :connection :password)))
+    :name ""
+    :hostname (ubiquitous:value :connection :default :hostname)
+    :port (ubiquitous:value :connection :default :port)
+    :username (ubiquitous:value :connection :default :username)
+    :password (ubiquitous:value :connection :default :password)))
 
-(defmethod initialize-instance :after ((connect connect) &key hostname port username password)
+(defmethod initialize-instance :after ((connect connect) &key name hostname port username password)
+  (setf (q+:text (slot-value connect 'name)) name)
   (setf (q+:text (slot-value connect 'hostname)) hostname)
   (setf (q+:value (slot-value connect 'port)) port)
   (setf (q+:text (slot-value connect 'username)) username)
   (setf (q+:text (slot-value connect 'password)) password))
+
+(define-subwidget (connect name)
+    (q+:make-qlineedit))
 
 (define-subwidget (connect hostname)
     (q+:make-qlineedit))
@@ -54,6 +53,7 @@
 (define-subwidget (connect layout)
     (q+:make-qgridlayout connect)
   (let ((form (q+:make-qformlayout)))
+    (q+:add-row form "Name" name)
     (q+:add-row form "Hostname" hostname)
     (q+:add-row form "Port" port)
     (q+:add-row form "Username" username)
@@ -64,7 +64,8 @@
 
 (defmethod settings ((connect connect))
   (with-slots-bound (connect connect)
-    (list :hostname (q+:text hostname)
+    (list :name (q+:text name)
+          :hostname (q+:text hostname)
           :port (q+:value port)
           :username (q+:text username)
           :password (when (string/= "" (q+:text password))
