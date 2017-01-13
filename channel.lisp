@@ -59,7 +59,7 @@
 (define-subwidget (channel-item name) (q+:make-qlabel)
   (let ((channel (qui:widget-item channel-item)))
     (setf (q+:text name) (name channel))
-    (setf (q+:tool-tip name) (format NIL "~a/~a" (name channel) (name (client channel))))))
+    (setf (q+:tool-tip name) (format NIL "~a // ~a" (name (client channel)) (name channel)))))
 
 (define-subwidget (channel-item type)
     (q+:make-qlabel (cond ((primary-p (qui:widget-item channel-item))
