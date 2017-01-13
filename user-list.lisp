@@ -31,9 +31,7 @@
 (define-subwidget (user-list list)
     (make-instance 'qui:listing :draggable NIL
                                 :sorting (lambda (a b)
-                                           (or (and (eql (standing a) :friend)
-                                                    (not (eql (standing a) :friend)))
-                                               (string< (name a) (name b))))))
+                                           (string< (name a) (name b)))))
 
 (define-subwidget (user-list scroller)
     (q+:make-qscrollarea)

@@ -72,7 +72,8 @@
 (define-subwidget (channel-item type)
     (q+:make-qlabel (label (qui:widget-item channel-item)))
   (setf (q+:font type) (q+:make-qfont "NotoEmoji"))
-  (setf (q+:fixed-width type) 20))
+  (setf (q+:fixed-width type) 20)
+  (setf (q+:alignment type) (q+:qt.align-center)))
 
 (define-subwidget (channel-item layout) (q+:make-qhboxlayout channel-item)
   (setf (q+:margin layout) 5)
