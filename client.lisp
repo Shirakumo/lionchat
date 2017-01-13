@@ -20,12 +20,10 @@
    (server-name :initform NIL :accessor server-name)
    (send-thread :initform NIL :accessor send-thread)
    (users :initform NIL :accessor users)
-   (channels :initform NIL :accessor channels))
-  (:default-initargs
-   :name (error "NAME required.")))
+   (channels :initform NIL :accessor channels)))
 
 (defmethod initialize-instance :before ((client client) &key name)
-  (when (string= name "")
+  (when (or (not name) (string= name ""))
     (error "NAME cannot be empty.")))
 
 (defmethod client ((client client))
