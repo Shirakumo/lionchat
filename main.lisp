@@ -213,7 +213,7 @@ Version: ~a"
   (let ((*package* #.*package*))
     (v:output-here)
     (default-configuration)
-    (q+:qfontdatabase-add-application-font (uiop:native-namestring
-                                            (asdf:system-relative-pathname :lionchat "data/noto-emoji.ttf")))
-    (q+:qapplication-set-quit-on-last-window-closed NIL)
-    (with-main-window (main 'main :name "Lionchat"))))
+    (with-main-window (main 'main :name "Lionchat")
+      (q+:qfontdatabase-add-application-font (uiop:native-namestring
+                                              (asdf:system-relative-pathname :lionchat "data/noto-emoji.ttf")))
+      (q+:qapplication-set-quit-on-last-window-closed NIL))))
