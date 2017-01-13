@@ -47,9 +47,8 @@
 (define-subwidget (user-item menu) (q+:make-qmenu)
   (setf (q+:context-menu-policy user-item) (q+:qt.custom-context-menu))
   (q+:add-action menu "Information")
-  (q+:add-action menu "Kick")
   (q+:add-action menu "Contact")
-  (q+:add-action menu "Un/Friend"))
+  (q+:add-action menu "Kick"))
 
 (define-slot (user-item show-menu) ((pos "const QPoint&"))
   (declare (connected user-item (custom-context-menu-requested "const QPoint&")))
@@ -60,6 +59,9 @@
             ((string= "Information" (q+:text selected))
              (qsend user 'lichat-protocol:user-info
                     :target (name user)))
+            ((string= "Kick" (q+:text selected))
+             (qsend user 'lichat-protocol:kick
+                    :channel (name (channel *main*)) :target (name user)))
             ((string= "Contact" (q+:text selected))
              (let ((id (lichat-protocol:id (qsend user 'lichat-protocol:create :channel NIL))))
                (with-awaiting (update id *main*)
@@ -68,9 +70,4 @@
                     (qsend user 'lichat-protocol:pull
                            :channel (lichat-protocol:channel update) :target (name user)))
                    (lichat-protocol:update-failure
-                    (show-error user-item "Failed to open personal connection."))))))
-            ((string= "Kick" (q+:text selected))
-             (qsend user 'lichat-protocol:kick
-                    :channel (name (channel *main*)) :target (name user)))
-            ((string= "Un/Friend" (q+:text selected))
-             )))))
+                    (show-error user-item "Failed to open personal connection."))))))))))
