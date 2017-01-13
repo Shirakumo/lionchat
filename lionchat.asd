@@ -30,6 +30,7 @@
                :lichat-tcp-client
                :qtools-ui-listing
                :qtools-ui-options
+               :qtools-ui-notification
                :qtools
                :qtcore
                :qtgui

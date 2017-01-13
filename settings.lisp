@@ -59,9 +59,11 @@
 
 (qui:define-configurable behavior-settings ()
   ((tray :initarg :tray :option (boolean :title "Minimize to Tray"))
+   (notify :initarg :notify :option (boolean :title "Desktop notifications"))
    (sound :initarg :sound :option (boolean :title "Play Sounds")))
   (:default-initargs
    :tray (ubiquitous:value :behavior :tray)
+   :notify (ubiquitous:value :behaviour :notify)
    :sound (ubiquitous:value :behavior :sound)))
 
 (defmethod settings ((settings behavior-settings))
@@ -207,6 +209,7 @@
   (ubiquitous:defaulted-value "" :connection :default :password)
   (ubiquitous:defaulted-value NIL :connection :default :auto)
   (ubiquitous:defaulted-value T :behavior :tray)
+  (ubiquitous:defaulted-value T :behavior :notify)
   (ubiquitous:defaulted-value T :behavior :sound)
   (ubiquitous:defaulted-value "#EEE" :style :text)
   (ubiquitous:defaulted-value "#CCC" :style :time)

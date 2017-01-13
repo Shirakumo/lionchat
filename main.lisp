@@ -61,6 +61,16 @@
                               unless (funcall await update)
                               collect await)))
 
+(defmethod update :after ((main main) (update lichat-protocol:message))
+  (when (and (ubiquitous:value :behavior :notify)
+             (not (q+:is-visible main)))
+    (let ((user (lichat-protocol:from update)))
+      (q+:show (make-instance 'qui:notification
+                              :title (format NIL "~a | Lionchat" (lichat-protocol:channel update))
+                              :message (format NIL "<span style=\"color:~a\">~a</span>: ~a"
+                                               (object-color user) user (lichat-protocol:text update))
+                              :timeout 3000)))))
+
 (defmethod update :after ((main main) (update lichat-protocol:join))
   (when (string= (username (client update))
                  (lichat-protocol:from update))
