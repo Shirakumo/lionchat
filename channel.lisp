@@ -14,9 +14,11 @@
    (updates :initform (make-array 0 :adjustable T :fill-pointer T) :accessor updates)
    (users :initform () :accessor users))
   (:default-initargs
-   :primary-p NIL
-   :name (error "NAME required.")
-   :client (error "CLIENT required.")))
+   :primary-p NIL))
+
+(defmethod initialize-instance :before ((channel channel) &key name client)
+  (unless name (error "NAME required."))
+  (unless client (error "CLIENT required.")))
 
 (defmethod initialize-instance :after ((channel channel) &key client name)
   (when (equal (server-name client) name)

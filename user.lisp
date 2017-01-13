@@ -12,9 +12,11 @@
    (client :initarg :client :accessor client)
    (standing :initarg :standing :accessor standing))
   (:default-initargs
-   :name (error "NAME required.")
-   :client (error "CLIENT required.")
    :standing :neutral))
+
+(defmethod initialize-instance :before ((user user) &key name client)
+  (unless name (error "NAME required."))
+  (unless client (error "CLIENT required.")))
 
 (defmethod qui:coerce-item ((user user) container)
   (make-instance 'user-item :item user :container container))
