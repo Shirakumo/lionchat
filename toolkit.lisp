@@ -86,3 +86,18 @@
             (min 200 (max 50 red))
             (min 200 (max 50 green))
             (min 200 (max 50 blue)))))
+
+(defun permissions-string (perms)
+  (with-output-to-string (out)
+    (let ((*print-case* :downcase)
+          (*package* (find-package :org.shirakumo.lichat.protocol)))
+      (format out "(~{~s~^~% ~})" perms))))
+
+(defun read-permissions (string)
+  (let ((*package* (find-package :org.shirakumo.lichat.protocol)))
+    (read-from-string string)))
+
+(defun show-error (parent text &rest args)
+  (q+:qmessagebox-warning
+   parent "Lionchat Error"
+   (escape-html (apply #'format NIL text args))))

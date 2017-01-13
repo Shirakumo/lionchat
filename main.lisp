@@ -129,9 +129,7 @@
             (setf (find-client (name client) main)
                   (open-connection client))))
     (error (err)
-      (q+:qmessagebox-warning main "Lionchat Error"
-                              (escape-html
-                               (format NIL "Connection to ~a failed:~%~a" (getf args :name) err))))))
+      (show-error main "Connection to ~a failed:~%~a" (getf args :name) err))))
 
 (defun show-settings (main &rest initargs)
   (with-slots-bound (main main)
