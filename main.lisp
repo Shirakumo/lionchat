@@ -76,16 +76,6 @@
                  (lichat-protocol:from update))
     (setf (channel main) (find-channel (lichat-protocol:channel update) (client update)))))
 
-(defmacro with-awaiting ((update id main) &body body)
-  (let ((idg (gensym "ID")))
-    `(let ((,idg ,id))
-       (push (lambda (,update)
-               (when (or (equal ,idg (lichat-protocol:id ,update))
-                         (equal ,idg (lichat-protocol:update-id ,update)))
-                 ,@body
-                 T))
-             (awaiting ,main)))))
-
 (define-initializer (main setup)
   ;; First-time setup
   (unless (ubiquitous:value :setup)

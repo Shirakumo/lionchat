@@ -105,3 +105,14 @@
   (q+:qmessagebox-warning
    parent "Lionchat Error"
    (escape-html (apply #'format NIL text args))))
+
+;; Define early.
+(defmacro with-awaiting ((update id main) &body body)
+  (let ((idg (gensym "ID")))
+    `(let ((,idg ,id))
+       (push (lambda (,update)
+               (when (or (equal ,idg (lichat-protocol:id ,update))
+                         (equal ,idg (lichat-protocol:update-id ,update)))
+                 ,@body
+                 T))
+             (awaiting ,main)))))
