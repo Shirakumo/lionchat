@@ -26,14 +26,15 @@
                (:file "chat-area")
                (:file "tray")
                (:file "main"))
-  :depends-on (:alexandria
-               :lichat-tcp-client
-               :qtools-ui-listing
-               :qtools-ui-options
-               :qtools-ui-notification
+  :depends-on (:lichat-tcp-client
                :qtools
                :qtcore
                :qtgui
+               :qtsvg
+               :qtools-ui-listing
+               :qtools-ui-options
+               :qtools-ui-notification
+               :alexandria
                :bordeaux-threads
                :documentation-utils
                :verbose

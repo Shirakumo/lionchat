@@ -192,6 +192,7 @@
   (:item "&About"
          (with-finalizing ((b (q+:make-qmessagebox)))
            (setf (q+:window-title b) "About LionChat")
+           (setf (q+:icon-pixmap b) (q+:pixmap (q+:window-icon *qapplication*) 64 64))
            (setf (q+:text b) (system-about))
            (q+:exec b))))
 
@@ -213,7 +214,9 @@ Version: ~a"
   (let ((*package* #.*package*))
     (v:output-here)
     (default-configuration)
-    (with-main-window (main 'main :name "Lionchat")
-      (q+:qfontdatabase-add-application-font (uiop:native-namestring
-                                              (asdf:system-relative-pathname :lionchat "data/noto-emoji.ttf")))
-      (q+:qapplication-set-quit-on-last-window-closed NIL))))
+    (ensure-qapplication :name "Lionchat")
+    (setf (q+:window-icon *qapplication*)
+          (q+:make-qicon (uiop:native-namestring (data "logo.svg"))))
+    (q+:qfontdatabase-add-application-font (uiop:native-namestring (data "noto-emoji.ttf")))
+    (q+:qapplication-set-quit-on-last-window-closed NIL)
+    (with-main-window (main 'main))))
