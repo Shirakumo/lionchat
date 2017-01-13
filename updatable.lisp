@@ -16,7 +16,8 @@
 
 (defmethod enqueue-update (update (updatable updatable))
   (bt:with-lock-held ((lock updatable))
-    (vector-push-extend update (queue updatable))))
+    (vector-push-extend update (queue updatable)))
+  update)
 
 (defmethod process-updates ((updatable updatable))
   (let ((queue))
