@@ -77,7 +77,11 @@
   (setf (client update) client))
 
 (defmethod process ((update lichat-protocol:connect) (client client))
-  (setf (server-name client) (lichat-protocol:from update)))
+  (setf (server-name client) (lichat-protocol:from update))
+  ;; Autojoin favourites
+  (dolist (name (known-channels client))
+    (when (ubiquitous:value :channels (name client) name :favorite)
+      (qsend client 'lichat-protocol:join :channel name))))
 
 (defmethod process ((update lichat-protocol:users) (client client))
   (let ((channel (find-channel (lichat-protocol:channel update) client)))
