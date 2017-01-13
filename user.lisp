@@ -28,7 +28,7 @@
 (define-subwidget (user-item name) (q+:make-qlabel)
   (let ((user (qui:widget-item user-item)))
     (setf (q+:text name) (name user))
-    (setf (q+:tool-tip name) (format NIL "~a/~a" (name user) (name (client user))))
+    (setf (q+:tool-tip name) (format NIL "~a // ~a" (name (client user)) (name user)))
     (setf (q+:style-sheet name) (format NIL "color:~a;" (object-color (name user))))))
 
 (define-subwidget (user-item type)
