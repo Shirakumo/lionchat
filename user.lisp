@@ -14,9 +14,21 @@
   (:default-initargs
    :standing :neutral))
 
+(defmethod label ((user user))
+  (ecase (standing user)
+    (:neutral "")
+    (:muted "🔇")
+    (:friend "♥")
+    (:server "★")
+    (:self "")))
+
 (defmethod initialize-instance :before ((user user) &key name client)
   (unless name (error "NAME required."))
-  (unless client (error "CLIENT required.")))
+  (unless client (error "CLIENT required."))
+  (when (string= name (username client))
+    (setf (standing user) :self))
+  (when (string= name (server-name client))
+    (setf (standing user) :server)))
 
 (defmethod qui:coerce-item ((user user) container)
   (make-instance 'user-item :item user :container container))
@@ -32,10 +44,8 @@
     (setf (q+:style-sheet name) (format NIL "color:~a;" (object-color (name user))))))
 
 (define-subwidget (user-item type)
-    (q+:make-qlabel (case (standing (qui:widget-item user-item))
-                      (:neutral "")
-                      (:muted "_")
-                      (:friend "+")))
+    (q+:make-qlabel (label (qui:widget-item user-item)))
+  (setf (q+:font type) (q+:make-qfont "NotoEmoji"))
   (setf (q+:fixed-width type) 20))
 
 (define-subwidget (user-item layout) (q+:make-qhboxlayout user-item)
@@ -48,6 +58,7 @@
   (setf (q+:context-menu-policy user-item) (q+:qt.custom-context-menu))
   (q+:add-action menu "Information")
   (q+:add-action menu "Contact")
+  (q+:add-action menu "Un/Mute")
   (q+:add-action menu "Kick"))
 
 (define-slot (user-item show-menu) ((pos "const QPoint&"))
@@ -62,6 +73,11 @@
             ((string= "Kick" (q+:text selected))
              (qsend user 'lichat-protocol:kick
                     :channel (name (channel *main*)) :target (name user)))
+            ((string= "Un/Mute" (q+:text selected))
+             (case (standing user)
+               ((:neutral :friend) (setf (standing user) :muted))
+               (:muted (setf (standing user) :neutral)))
+             (setf (q+:text type) (label user)))
             ((string= "Contact" (q+:text selected))
              (let ((id (lichat-protocol:id (qsend user 'lichat-protocol:create :channel NIL))))
                (with-awaiting (update id *main*)

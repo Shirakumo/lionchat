@@ -8,13 +8,21 @@
 (in-readtable :qtools)
 
 (defclass channel ()
-  ((primary-p :initarg :primary-p :accessor primary-p)
-   (name :initarg :name :accessor name)
+  ((name :initarg :name :accessor name)
    (client :initarg :client :accessor client)
    (updates :initform (make-array 0 :adjustable T :fill-pointer T) :accessor updates)
-   (users :initform () :accessor users))
+   (users :initform () :accessor users)
+   (primary-p :initarg :primary-p :accessor primary-p)
+   (favorite-p :initarg :favorite-p :accessor favorite-p))
   (:default-initargs
-   :primary-p NIL))
+   :primary-p NIL
+   :favorite-p NIL))
+
+(defmethod label ((channel channel))
+  (cond ((primary-p channel) "⚑")
+        ((anonymous-p channel) "👤")
+        ((favorite-p channel) "★")
+        (T "")))
 
 (defmethod initialize-instance :before ((channel channel) &key name client)
   (unless name (error "NAME required."))
@@ -62,11 +70,8 @@
     (setf (q+:tool-tip name) (format NIL "~a // ~a" (name (client channel)) (name channel)))))
 
 (define-subwidget (channel-item type)
-    (q+:make-qlabel (cond ((primary-p (qui:widget-item channel-item))
-                           "#")
-                          ((anonymous-p (qui:widget-item channel-item))
-                           "@")
-                          (T "")))
+    (q+:make-qlabel (label (qui:widget-item channel-item)))
+  (setf (q+:font type) (q+:make-qfont "NotoEmoji"))
   (setf (q+:fixed-width type) 20))
 
 (define-subwidget (channel-item layout) (q+:make-qhboxlayout channel-item)
@@ -94,7 +99,8 @@
              (with-finalizing ((settings (make-instance 'channel-settings :channel channel)))
                (q+:exec settings)))
             ((string= "Un/Favourite" (q+:text selected))
-             )))))
+             (setf (favorite-p channel) (not (favorite-p channel)))
+             (setf (q+:text type) (label channel)))))))
 
 (define-widget channel-settings (QDialog)
   ((channel :initarg :channel :accessor channel)))

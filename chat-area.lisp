@@ -152,6 +152,10 @@
   (show-update-action update stream "pulled <span style=\"color:~a\">~a</a>"
                       (object-color (lichat-protocol:target update)) (lichat-protocol:target update)))
 
+(defmethod show-update :around ((update lichat-protocol:update) (stream stream))
+  (unless (eql :muted (standing (find-user (lichat-protocol:from update) (client update))))
+    (call-next-method)))
+
 (defmethod update ((chat-output chat-output) (update lichat-protocol:update))
   (q+:insert-html chat-output
                   (with-output-to-string (out)
