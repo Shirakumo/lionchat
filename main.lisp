@@ -45,6 +45,12 @@
   (declare (connected main (process-updates)))
   (process-updates main))
 
+(defmethod update ((main main) (update remove-client))
+  (when (and (channel main)
+             (eql (client update) (client (channel main))))
+    (setf (channel main) NIL))
+  (setf (find-client (name (client update)) main) NIL))
+
 (defmethod update ((main main) (update lichat-protocol:update))
   (update (slot-value main 'channel-list) update)
   (update (slot-value main 'chat-area) update)

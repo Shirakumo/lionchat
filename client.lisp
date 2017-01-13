@@ -11,6 +11,9 @@
 (lichat-protocol:define-protocol-class lichat-protocol:wire-object ()
   ((client :initform NIL :accessor client :slot-type (or null client))))
 
+(defclass remove-client ()
+  ((client :initarg :client :accessor client)))
+
 (defclass client (lichat-tcp-client:client updatable)
   ((main :initarg :main :accessor main)
    (name :initarg :name :accessor name)
@@ -37,10 +40,8 @@
   client)
 
 (defmethod close-connection :before ((client client))
-  (when (and (channel (main client))
-             (eql client (client (channel (main client)))))
-    (setf (channel (main client)) NIL))
-  (setf (find-client (name client) (main client)) NIL))
+  (enqueue-update (make-instance 'remove-client :client client)
+                  (main client)))
 
 (defmethod handle-send-connection ((client client))
   (loop while (ignore-errors (open-stream-p (lichat-tcp-client::socket-stream client)))
@@ -96,10 +97,10 @@
                                                   :client client)))
       ;; Get user listing for the new channel.
       (qsend client 'lichat-protocol:users :channel channelname))
-    (process update channel)
     (when (primary-p channel)
       (setf (find-user (lichat-protocol:from update) client)
-            (make-instance 'user :name (lichat-protocol:from update) :client client)))))
+            (make-instance 'user :name (lichat-protocol:from update) :client client)))
+    (process update channel)))
 
 (defmethod process ((update lichat-protocol:leave) (client client))
   (let* ((channelname (lichat-protocol:channel update))
