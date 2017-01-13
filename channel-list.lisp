@@ -17,12 +17,16 @@
 (defmethod update ((channel-list channel-list) (update lichat-protocol:join))
   (when (string= (lichat-protocol:from update)
                  (username (client update)))
-    (setf (channels channel-list) (channels (client update)))))
+    (setf (channels channel-list)
+          (append (channels (client update))
+                  (remove (client update) (channels channel-list) :key #'client)))))
 
 (defmethod update ((channel-list channel-list) (update lichat-protocol:leave))
   (when (string= (lichat-protocol:from update)
                  (username (client update)))
-    (setf (channels channel-list) (channels (client update)))))
+    (setf (channels channel-list)
+          (append (channels (client update))
+                  (remove (client update) (channels channel-list) :key #'client)))))
 
 (define-initializer (channel-list setup)
   (setf (q+:features channel-list) (q+:qdockwidget.dock-widget-movable))
