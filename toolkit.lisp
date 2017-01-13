@@ -7,6 +7,8 @@
 (in-package #:org.shirakumo.lichat.lionchat)
 (in-readtable :qtools)
 
+(defvar *deployed* NIL)
+
 (defun starts-with (prefix string &key (start 0))
   (and (<= (length prefix) (+ start (length string)))
        (string= prefix string :start2 start :end2 (+ start (length prefix)))))
@@ -116,3 +118,8 @@
                  ,@body
                  T))
              (awaiting ,main)))))
+
+(defun data (file)
+  (merge-pathnames file (if *deployed*
+                            (merge-pathnames "data/" (uiop:argv0))
+                            (asdf:system-relative-pathname :lionchat "data/"))))
