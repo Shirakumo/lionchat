@@ -26,7 +26,7 @@
 
 (define-initializer (tray setup 0)
   (setf (q+:tool-tip tray) "Lionchat")
-  ;; (setf (q+:icon tray) (q+:make-qicon (uiop:native-namestring (resource "tray.png"))))
+  (setf (q+:icon tray) (q+:window-icon *qapplication*))
   (setf (q+:context-menu tray) menu))
 
 (define-signal (tray tray-message) (string string))
