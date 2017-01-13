@@ -10,7 +10,8 @@
 (defvar *main* NIL)
 
 (define-widget main (QMainWindow updatable)
-  ((clients :initform NIL :accessor clients)))
+  ((clients :initform NIL :accessor clients)
+   (awaiting :initform NIL :accessor awaiting)))
 
 (defmethod initialize-instance :before ((main main) &key)
   (setf *main* main))
@@ -45,15 +46,28 @@
   (process-updates main))
 
 (defmethod update ((main main) (update lichat-protocol:update))
-  ;; FIXME: Queue for awaiting events from the GUI
   (update (slot-value main 'channel-list) update)
   (update (slot-value main 'chat-area) update)
-  (update (slot-value main 'user-list) update))
+  (update (slot-value main 'user-list) update)
+  ;; Process awaits
+  (setf (awaiting main) (loop for await in (awaiting main)
+                              unless (funcall await update)
+                              collect await)))
 
 (defmethod update :after ((main main) (update lichat-protocol:join))
   (when (string= (username (client update))
                  (lichat-protocol:from update))
     (setf (channel main) (find-channel (lichat-protocol:channel update) (client update)))))
+
+(defmacro with-awaiting ((update id main) &body body)
+  (let ((idg (gensym "ID")))
+    `(let ((,idg ,id))
+       (push (lambda (,update)
+               (when (or (equal ,idg (lichat-protocol:id ,update))
+                         (equal ,idg (lichat-protocol:update-id ,update)))
+                 ,@body
+                 T))
+             (awaiting ,main)))))
 
 (define-initializer (main setup)
   ;; First-time setup
