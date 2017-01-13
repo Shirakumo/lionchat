@@ -92,20 +92,33 @@
              )))))
 
 (define-widget channel-settings (QDialog)
-  ())
+  ((channel :initarg :channel :accessor channel)))
 
 (defmethod initialize-instance :after ((channel-settings channel-settings) &key channel)
   (setf (q+:text (slot-value channel-settings 'name))
         (name channel))
-  ;; With response for perms
-  )
+  (let ((id (lichat-protocol:id (qsend channel 'lichat-protocol:permissions
+                                       :channel (name channel)))))
+    (with-awaiting (update id (main (client channel)))
+      (cond ((typep update 'lichat-protocol:permissions)
+             (setf (q+:text (slot-value channel-settings 'permissions))
+                   (permissions-string (lichat-protocol:permissions update)))
+             (setf (q+:read-only (slot-value channel-settings 'permissions)) NIL))
+            (T
+             (show-error channel-settings "Failed to retrieve permissions."))))))
 
 (define-subwidget (channel-settings name)
     (q+:make-qlineedit)
   (setf (q+:read-only name) T))
 
 (define-subwidget (channel-settings permissions)
-    (q+:make-qtextedit))
+    (q+:make-qtextedit)
+  (setf (q+:text permissions) "Loading...")
+  (setf (q+:read-only permissions) T))
+
+(define-subwidget (channel-settings font) (q+:make-qfont "Consolas, Inconsolata, Monospace" 10)
+  (setf (q+:style-hint font) (q+:qfont.type-writer))
+  (setf (q+:font permissions) font))
 
 (define-subwidget (channel-settings save)
     (q+:make-qpushbutton "Save"))
@@ -120,5 +133,12 @@
 
 (define-slot (channel-settings save) ()
   (declare (connected save (clicked)))
-  ;; With response for perms
-  )
+  (let ((id (lichat-protocol:id (qsend channel 'lichat-protocol:permissions
+                                       :channel (name channel)
+                                       :permissions (read-permissions (q+:to-plain-text permissions))))))
+    (with-awaiting (update id (main (client channel)))
+      (cond ((typep update 'lichat-protocol:permissions)
+             (q+:accept channel-settings))
+            ((typep update 'lichat-protocol:update-failure)
+             (show-error channel-settings "Failed to update permissions:~%~a"
+                         (lichat-protocol:text update)))))))
