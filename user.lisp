@@ -61,11 +61,14 @@
              (qsend user 'lichat-protocol:user-info
                     :target (name user)))
             ((string= "Contact" (q+:text selected))
-             (qsend user 'lichat-protocol:create
-                    :channel NIL)
-             ;; With response for join
-             (qsend user 'lichat-protocol:pull
-                    :channel NIL :target (name user)))
+             (let ((id (lichat-protocol:id (qsend user 'lichat-protocol:create :channel NIL))))
+               (with-awaiting (update id *main*)
+                 (typecase update
+                   (lichat-protocol:join
+                    (qsend user 'lichat-protocol:pull
+                           :channel (lichat-protocol:channel update) :target (name user)))
+                   (lichat-protocol:update-failure
+                    (show-error user-item "Failed to open personal connection."))))))
             ((string= "Kick" (q+:text selected))
              (qsend user 'lichat-protocol:kick
                     :channel (name (channel *main*)) :target (name user)))
