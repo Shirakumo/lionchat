@@ -31,7 +31,7 @@
   (vector-push-extend update (updates channel)))
 
 ;; Maintain userlist
-(defmethod process ((update lichat-protocol:users) (channel channel))
+(defmethod process :after ((update lichat-protocol:users) (channel channel))
   (setf (users channel) (loop for user in (lichat-protocol:users update)
                               collect (or (find-user user (client channel))
                                           (error "INCONSISTENCY: ~a not found" user)))))

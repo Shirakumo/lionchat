@@ -183,9 +183,9 @@
 (define-menu (main Window)
   (:menu clients-menu)
   (:separator)
-  (:item "&Channels"
+  (:item "Channels"
          (setf (q+:visible channel-list) (not (q+:is-visible channel-list))))
-  (:item "&Users"
+  (:item "Users"
          (setf (q+:visible user-list) (not (q+:is-visible user-list)))))
 
 (define-menu (main Help)

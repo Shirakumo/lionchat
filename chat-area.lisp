@@ -15,9 +15,17 @@
   (update (slot-value chat-area 'output) thing)
   (setf (q+:enabled (slot-value chat-area 'send)) thing))
 
-(defmethod update ((chat-area chat-area) thing)
-  ;; FIXME: Test if matches channel
-  (update (slot-value chat-area 'output) thing))
+;; Only update if the client (and channel) match the update.
+(defmethod update ((chat-area chat-area) (update lichat-protocol:update))
+  (when (and (channel chat-area)
+             (eql (client (channel chat-area)) (client update)))
+    (update (slot-value chat-area 'output) update)))
+
+(defmethod update ((chat-area chat-area) (update lichat-protocol:channel-update))
+  (when (and (channel chat-area)
+             (eql (client (channel chat-area)) (client update))
+             (string= (name (channel chat-area)) (lichat-protocol:channel update)))
+    (update (slot-value chat-area 'output) update)))
 
 (define-subwidget (chat-area output)
     (make-instance 'chat-output))

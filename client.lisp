@@ -115,6 +115,13 @@
 (defmethod process ((update lichat-protocol:channel-update) (client client))
   (process update (find-channel (lichat-protocol:channel update) client)))
 
+(defmethod process ((update lichat-protocol:update) (client client))
+  (cond ((and (channel (main client))
+              (eql client (client (channel (main client)))))
+         (process update (channel (main client))))
+        ((find-channel T client)
+         (process update (find-channel T client)))))
+
 ;; Deliver to main thread for synchronised processing, make sure it happens
 ;; after we're done updating all the internal objects.
 (defmethod process :around ((update lichat-protocol:update) (client client))
