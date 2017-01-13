@@ -72,7 +72,8 @@
 (define-slot (channel-list join) ()
   (declare (connected join (clicked)))
   (let ((name (q+:text channelname)))
-    (when (string/= "" name)
+    (when (and (string/= "" name)
+               (channel channel-list))
       (qsend (channel channel-list)
              'lichat-protocol:join
              :channel name)
@@ -81,7 +82,8 @@
 (define-slot (channel-list create) ()
   (declare (connected create (clicked)))
   (let ((name (q+:text channelname)))
-    (when (string/= "" name)
+    (when (and (string/= "" name)
+               (channel channel-list))
       (qsend (channel channel-list)
              'lichat-protocol:create
              :channel name)
