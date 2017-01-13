@@ -18,7 +18,7 @@
   (cond ((muted-p user)
          "🔇")
         ((string= (name user) (server-name (client user)))
-         "★")
+         "⚑")
         ((string= (name user) (username (client user)))
          "👤")
         (T
