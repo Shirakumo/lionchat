@@ -153,8 +153,10 @@
                       (object-color (lichat-protocol:target update)) (lichat-protocol:target update)))
 
 (defmethod show-update :around ((update lichat-protocol:update) (stream stream))
-  (unless (muted-p (find-user (lichat-protocol:from update) (client update)))
-    (call-next-method)))
+  ;; FIXME: How to retain muted property even if user has left after having spoken?
+  (let ((user (find-user (lichat-protocol:from update) (client update))))
+    (when (or (not user) (not (muted-p user)))
+      (call-next-method))))
 
 (defmethod update ((chat-output chat-output) (update lichat-protocol:update))
   (q+:insert-html chat-output
