@@ -33,10 +33,13 @@
 ;; Maintain userlist
 (defmethod process ((update lichat-protocol:users) (channel channel))
   (setf (users channel) (loop for user in (lichat-protocol:users update)
-                              collect (find-user user (client channel)))))
+                              collect (or (find-user user (client channel))
+                                          (error "INCONSISTENCY: ~a not found" user)))))
 
 (defmethod process :after ((update lichat-protocol:join) (channel channel))
-  (pushnew (find-user (lichat-protocol:from update) (client channel)) (users channel)))
+  (pushnew (or (find-user (lichat-protocol:from update) (client channel))
+               (error "INCONSISTENCY: ~a not found" (lichat-protocol:from update)))
+           (users channel)))
 
 (defmethod process :after ((update lichat-protocol:leave) (channel channel))
   (setf (users channel) (remove (lichat-protocol:from update) (users channel)
