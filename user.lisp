@@ -7,12 +7,14 @@
 (in-package #:org.shirakumo.lichat.lionchat)
 (in-readtable :qtools)
 
+(defun known-users (client)
+  (loop for name being the hash-keys of
+        (ubiquitous:defaulted-value (make-hash-table :test 'equal) :users (name client))
+        collect name))
+
 (defclass user ()
   ((name :initarg :name :accessor name)
-   (client :initarg :client :accessor client)
-   (muted-p :initarg :muted-p :accessor muted-p))
-  (:default-initargs
-   :muted-p NIL))
+   (client :initarg :client :accessor client)))
 
 (defmethod label ((user user))
   (cond ((muted-p user)
@@ -27,6 +29,12 @@
 (defmethod initialize-instance :before ((user user) &key name client)
   (unless name (error "NAME required."))
   (unless client (error "CLIENT required.")))
+
+(defmethod muted-p ((user user))
+  (ubiquitous:value :users (name (client user)) (name user) :muted))
+
+(defmethod (setf muted-p) (value (user user))
+  (setf (ubiquitous:value :users (name (client user)) (name user) :muted) value))
 
 (defmethod qui:coerce-item ((user user) container)
   (make-instance 'user-item :item user :container container))

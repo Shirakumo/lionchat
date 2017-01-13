@@ -7,16 +7,19 @@
 (in-package #:org.shirakumo.lichat.lionchat)
 (in-readtable :qtools)
 
+(defun known-channels (client)
+  (loop for name being the hash-keys of
+        (ubiquitous:defaulted-value (make-hash-table :test 'equal) :channels (name client))
+        collect name))
+
 (defclass channel ()
   ((name :initarg :name :accessor name)
    (client :initarg :client :accessor client)
    (updates :initform (make-array 0 :adjustable T :fill-pointer T) :accessor updates)
    (users :initform () :accessor users)
-   (primary-p :initarg :primary-p :accessor primary-p)
-   (favorite-p :initarg :favorite-p :accessor favorite-p))
+   (primary-p :initarg :primary-p :accessor primary-p))
   (:default-initargs
-   :primary-p NIL
-   :favorite-p NIL))
+   :primary-p NIL))
 
 (defmethod label ((channel channel))
   (cond ((primary-p channel) "⚑")
@@ -34,6 +37,12 @@
 
 (defmethod anonymous-p ((channel channel))
   (char= #\@ (char (name channel) 0)))
+
+(defmethod favorite-p ((channel channel))
+  (ubiquitous:value :channels (name (client channel)) (name channel) :favorite))
+
+(defmethod (setf favorite-p) (value (channel channel))
+  (setf (ubiquitous:value :channels (name (client channel)) (name channel) :favorite) value))
 
 (defmethod process ((update lichat-protocol:update) (channel channel))
   (vector-push-extend update (updates channel)))
