@@ -85,7 +85,8 @@
   (setf (q+:context-menu-policy channel-item) (q+:qt.custom-context-menu))
   (q+:add-action menu "Leave")
   (q+:add-action menu "Settings")
-  (q+:add-action menu "Un/Favourite"))
+  (unless (anonymous-p (qui:widget-item channel-item))
+    (q+:add-action menu "Un/Favourite")))
 
 (define-slot (channel-item show-menu) ((pos "const QPoint&"))
   (declare (connected channel-item (custom-context-menu-requested "const QPoint&")))
