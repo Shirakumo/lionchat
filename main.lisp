@@ -100,6 +100,10 @@
     (make-instance 'user-list :main main)
   (q+:add-dock-widget main (q+:qt.right-dock-widget-area) user-list))
 
+(define-subwidget (main friend-list)
+    (make-instance 'friend-list :main main)
+  (q+:add-dock-widget main (q+:qt.right-dock-widget-area) user-list))
+
 (define-subwidget (main chat-area)
     (make-instance 'chat-area :main main)
   (setf (q+:central-widget main) chat-area))
@@ -186,7 +190,9 @@
   (:item "Channels"
          (setf (q+:visible channel-list) (not (q+:is-visible channel-list))))
   (:item "Users"
-         (setf (q+:visible user-list) (not (q+:is-visible user-list)))))
+         (setf (q+:visible user-list) (not (q+:is-visible user-list))))
+  (:item "Friends"
+         (setf (q+:visible friend-list) (not (q+:is-visible friend-list)))))
 
 (define-menu (main Help)
   (:item "&About"

@@ -22,6 +22,7 @@
                (:file "user-list")
                (:file "channel")
                (:file "channel-list")
+               (:file "friend-list")
                (:file "commands")
                (:file "chat-area")
                (:file "tray")
