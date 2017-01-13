@@ -84,9 +84,9 @@
   ;; Populate menu
   (update-connect-menu main)
   ;; Autoconnect
-  (loop for connection being the hash-values of (ubiquitous:value :connection)
-        when (and (listp connection) (cdr (assoc :auto connection)))
-        do (apply #'maybe-connect main (alexandria:alist-plist connection))))
+  (loop for connection being the hash-values of (ubiquitous:value :connections)
+        when (gethash :auto connection)
+        do (apply #'maybe-connect main (alexandria:hash-table-plist connection))))
 
 (define-finalizer (main teardown)
   (dolist (client (clients main))
@@ -138,8 +138,8 @@
 
 (define-slot (main pick-connection) ((action "QAction*"))
   (declare (connected connect-menu (triggered "QAction*")))
-  (let ((client (ubiquitous:value :connection (q+:text action))))
-    (apply #'maybe-connect main (alexandria:alist-plist client))))
+  (let ((client (ubiquitous:value :connections (q+:text action))))
+    (apply #'maybe-connect main (alexandria:hash-table-plist client))))
 
 (defun maybe-connect (main &rest args)
   (remf args :auto)
@@ -154,9 +154,9 @@
 
 (defun show-settings (main &rest initargs)
   (with-slots-bound (main main)
-    (with-finalizing ((c (apply #'make-instance 'settings initargs)))
-      (when (= 1 (q+:exec c))
-        (setf (ubiquitous:value) (settings c))
+    (with-finalizing ((settings (apply #'make-instance 'settings initargs)))
+      (when (= 1 (q+:exec settings))
+        (save settings)
         (setf (channel main) (channel main))
         (setf (q+:visible tray) (ubiquitous:value :behavior :tray))
         (update-connect-menu main)))))
@@ -164,7 +164,7 @@
 (defun update-connect-menu (main)
   (with-slots-bound (main main)
     (q+:clear connect-menu)
-    (loop for k being the hash-keys of (ubiquitous:value :connection)
+    (loop for k being the hash-keys of (ubiquitous:value :connections)
           when (stringp k)
           do (q+:add-action connect-menu k))))
 
