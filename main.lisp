@@ -37,7 +37,7 @@
   (setf-named (clients main) name value))
 
 (defmethod enqueue-update :after (update (main main))
-  (unless (null-qobject-p main)
+  (unless (qobject-deleted main)
     (signal! main (process-updates))))
 
 (define-signal (main process-updates) ())
