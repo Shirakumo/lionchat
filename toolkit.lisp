@@ -7,6 +7,10 @@
 (in-package #:org.shirakumo.lichat.lionchat)
 (in-readtable :qtools)
 
+(defun starts-with (prefix string &key (start 0))
+  (and (<= (length prefix) (+ start (length string)))
+       (string= prefix string :start2 start :end2 (+ start (length prefix)))))
+
 (defmacro setf-named (list name new)
   (let ((newg (gensym "NEW")) (listg (gensym "LIST"))
         (nameg (gensym "NAME")) (prevg (gensym "PREV")))

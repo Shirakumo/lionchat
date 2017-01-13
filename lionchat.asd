@@ -22,6 +22,7 @@
                (:file "user-list")
                (:file "channel")
                (:file "channel-list")
+               (:file "commands")
                (:file "chat-area")
                (:file "tray")
                (:file "main"))
@@ -36,4 +37,5 @@
                :documentation-utils
                :verbose
                :cl-ppcre
-               :ubiquitous))
+               :ubiquitous
+               :trivial-arguments))

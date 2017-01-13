@@ -51,10 +51,16 @@
   (declare (connected send (clicked)))
   (declare (connected input (confirmed)))
   (when (channel chat-area)
-    (qsend (channel chat-area)
-           'lichat-protocol:message
-           :channel (name (channel chat-area))
-           :text (q+:to-plain-text input))
+    (let ((text (q+:to-plain-text input))
+          (channel (channel chat-area)))
+      (cond ((string= "" text))
+            ((starts-with "/" text)
+             (run-command channel (subseq text 1)))
+            (T
+             (qsend channel
+                    'lichat-protocol:message
+                    :channel (name channel)
+                    :text text))))
     (setf (q+:plain-text input) "")))
 
 (define-widget chat-output (QTextBrowser)
