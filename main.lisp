@@ -102,7 +102,7 @@
 
 (define-subwidget (main friend-list)
     (make-instance 'friend-list :main main)
-  (q+:add-dock-widget main (q+:qt.right-dock-widget-area) user-list))
+  (q+:add-dock-widget main (q+:qt.right-dock-widget-area) friend-list))
 
 (define-subwidget (main chat-area)
     (make-instance 'chat-area :main main)

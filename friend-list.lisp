@@ -18,3 +18,20 @@
     (make-instance 'qui:listing :draggable NIL
                                 :sorting (lambda (a b)
                                            (string< (name a) (name b)))))
+
+(define-subwidget (friend-list scroller)
+    (q+:make-qscrollarea)
+  (setf (q+:widget-resizable scroller) T)
+  (setf (q+:widget scroller) list))
+
+(define-subwidget (friend-list center)
+    (q+:make-qwidget)
+  (setf (q+:widget friend-list) center)
+  (setf (q+:size-policy center) (values (q+:qsizepolicy.preferred)
+                                        (q+:qsizepolicy.preferred))))
+
+(define-subwidget (friend-list layout)
+    (q+:make-qgridlayout center)
+  (setf (q+:margin layout) 0)
+  (setf (q+:spacing layout) 5)
+  (q+:add-widget layout scroller 0 0 1 1))
