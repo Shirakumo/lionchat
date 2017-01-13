@@ -90,7 +90,8 @@
           (ubiquitous:value :style :time) (format-time (lichat-protocol:clock update))
           (ubiquitous:value :style :update) (type-of update)))
 
-(defmethod show-update ((update lichat-protocol:users) (stream stream)))
+(defmethod show-update ((update lichat-protocol:ping) (stream stream)))
+(defmethod show-update ((update lichat-protocol:permissions) (stream stream)))
 
 (defmethod show-update ((update lichat-protocol:failure) (stream stream))
   (format stream "<span style=\"color:~a\">~a</span> ~
@@ -108,13 +109,26 @@
           (ubiquitous:value :style :text)
           (linkify-urls (escape-html (lichat-protocol:text update)))))
 
-(defun show-update-action (update stream msg &rest args)
+(defun show-update-info (update stream src msg &rest args)
   (format stream "<span style=\"color:~a\">~a</span> ~
                   * <span style=\"color:~a\">~a</span> ~?<br>"
           (ubiquitous:value :style :time) (format-time (lichat-protocol:clock update))
-          (object-color (lichat-protocol:from update))
-          (lichat-protocol:from update)
-          msg args))
+          (object-color src) src msg args))
+
+(defun show-update-action (update stream msg &rest args)
+  (apply #'show-update-info update stream (lichat-protocol:from update) msg args))
+
+(defmethod show-update ((update lichat-protocol:users) (stream stream))
+  (show-update-info update stream (lichat-protocol:channel update) "users: ~{~a~^, ~}"
+                    (lichat-protocol:users update)))
+
+(defmethod show-update ((update lichat-protocol:channels) (stream stream))
+  (show-update-info update stream (lichat-protocol:from update) "channels: ~{~a~^, ~}"
+                    (lichat-protocol:channels update)))
+
+(defmethod show-update ((update lichat-protocol:user-info) (stream stream))
+  (show-update-action update stream "is ~:[not registered~;registered~] and has ~d connection~:p"
+                      (lichat-protocol:registered update) (lichat-protocol:connections update)))
 
 (defmethod show-update ((update lichat-protocol:join) (stream stream))
   (show-update-action update stream "joined"))
