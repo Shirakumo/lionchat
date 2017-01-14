@@ -155,8 +155,8 @@
   (show-update-action update stream "pulled <span style=\"color:~a\">~a</a>"
                       (object-color (lichat-protocol:target update)) (lichat-protocol:target update)))
 
-(defmethod show-update ((update lichat-protocol:text-update) (stream stream))
-  (show-update-info update stream (lichat-protocol:from update) "~a"
+(defmethod show-update ((update internal-update) (stream stream))
+  (show-update-info update stream (lichat-protocol:from update) "<span>~a</span>"
                     (lichat-protocol:text update)))
 
 (defmethod show-update :around ((update lichat-protocol:update) (stream stream))
