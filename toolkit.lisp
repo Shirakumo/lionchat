@@ -9,6 +9,22 @@
 
 (defvar *deployed* NIL)
 
+(pushnew 'deploy-resources qtools:*build-hooks*)
+
+(defun deploy-resources ()
+  (let ((target (merge-pathnames "data/" qtools:*deployment-location*)))
+    (ensure-directories-exist target)
+    (dolist (file (directory (asdf:system-relative-pathname :lionchat "data/*.*")))
+      (uiop:copy-file file (make-pathnames :name (pathname-name file)
+                                           :type (pathname-type file)
+                                           :defaults target))))
+  (setf *deployed* T))
+
+(defun data (file)
+  (merge-pathnames file (if *deployed*
+                            (merge-pathnames "data/" (uiop:argv0))
+                            (asdf:system-relative-pathname :lionchat "data/"))))
+
 (defun starts-with (prefix string &key (start 0))
   (and (<= (length prefix) (+ start (length string)))
        (string= prefix string :start2 start :end2 (+ start (length prefix)))))
@@ -118,8 +134,3 @@
                  ,@body
                  T))
              (awaiting ,main)))))
-
-(defun data (file)
-  (merge-pathnames file (if *deployed*
-                            (merge-pathnames "data/" (uiop:argv0))
-                            (asdf:system-relative-pathname :lionchat "data/"))))

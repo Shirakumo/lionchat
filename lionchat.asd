@@ -12,6 +12,9 @@
   :maintainer "Nicolas Hafner <shinmera@tymoon.eu>"
   :description "A GUI client for the Lichat protocol"
   :homepage "https://github.com/Shinmera/lionchat"
+  :build-operation "qt-program-op"
+  :build-pathname "lionchat"
+  :entry-point "lionchat:start"
   :serial T
   :components ((:file "package")
                (:file "toolkit")
@@ -26,6 +29,7 @@
                (:file "chat-area")
                (:file "tray")
                (:file "main"))
+  :defsystem-depends-on (:qtools)
   :depends-on (:lichat-tcp-client
                :qtools
                :qtcore
