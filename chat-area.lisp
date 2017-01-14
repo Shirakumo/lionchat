@@ -96,8 +96,8 @@
   (update chat-output (updates channel)))
 
 (defmethod show-update ((update lichat-protocol:update) (stream stream))
-  (format stream "<span style=\"color:~a\">~a</span> ~
-                  <span style=\"color:~a\">* UPDATE</span> ~a<br>"
+  (format stream "<table><tr><td style=\"color:~a\">~a</td>~
+                  <td style=\"color:~a\">* UPDATE</td><td>~a</td></tr></table>"
           (ubiquitous:value :style :time) (format-time (lichat-protocol:clock update))
           (ubiquitous:value :style :update) (type-of update)))
 
@@ -105,15 +105,15 @@
 (defmethod show-update ((update lichat-protocol:permissions) (stream stream)))
 
 (defmethod show-update ((update lichat-protocol:failure) (stream stream))
-  (format stream "<span style=\"color:~a\">~a</span> ~
-                  <span style=\"color:~a\">* ~a</span> ~a<br>"
+  (format stream "<table><tr><td style=\"color:~a\">~a</td>~
+                  <td style=\"color:~a\"> * ~a</td><td>~a</td></tr></table>"
           (ubiquitous:value :style :time) (format-time (lichat-protocol:clock update))
           (ubiquitous:value :style :error) (type-of update) (escape-html (lichat-protocol:text update))))
 
 (defmethod show-update ((update lichat-protocol:message) (stream stream))
-  (format stream "<span style=\"color:~a\">~a</span> ~
-                  <span style=\"color:~a\" title=\"~a\">~a</span>: ~
-                  <span style=\"color:~a\">~a</span><br>"
+  (format stream "<table><tr><td style=\"color:~a\">~a</td>~
+                  <td style=\"color:~a\" title=\"~a\">~a:</td>~
+                  <td style=\"color:~a\">~a</td></tr></table>"
           (ubiquitous:value :style :time) (format-time (lichat-protocol:clock update))
           (object-color (lichat-protocol:from update))
           (lichat-protocol:from update) (format-name (lichat-protocol:from update))
@@ -121,8 +121,8 @@
           (format-update-text update)))
 
 (defun show-update-info (update stream src msg &rest args)
-  (format stream "<span style=\"color:~a\">~a</span> ~
-                  * <span style=\"color:~a\">~a</span> ~?<br>"
+  (format stream "<table><tr><td style=\"color:~a\">~a</td>~
+                  <td style=\"color:~a\"> * ~a</td><td>~?</td></tr></table>"
           (ubiquitous:value :style :time) (format-time (lichat-protocol:clock update))
           (object-color src) src msg args))
 
@@ -148,11 +148,11 @@
   (show-update-action update stream "left"))
 
 (defmethod show-update ((update lichat-protocol:kick) (stream stream))
-  (show-update-action update stream "kicked <span style=\"color:~a\">~a</a>"
+  (show-update-action update stream "kicked <span style=\"color:~a\">~a</span>"
                       (object-color (lichat-protocol:target update)) (lichat-protocol:target update)))
 
 (defmethod show-update ((update lichat-protocol:pull) (stream stream))
-  (show-update-action update stream "pulled <span style=\"color:~a\">~a</a>"
+  (show-update-action update stream "pulled <span style=\"color:~a\">~a</span>"
                       (object-color (lichat-protocol:target update)) (lichat-protocol:target update)))
 
 (defmethod show-update ((update internal-update) (stream stream))
