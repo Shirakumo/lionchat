@@ -9,6 +9,8 @@
 
 (defvar *main* NIL)
 
+;; FIXME: Shortcuts for everything
+
 (define-widget main (QMainWindow updatable)
   ((clients :initform NIL :accessor clients)
    (awaiting :initform NIL :accessor awaiting)))
