@@ -85,6 +85,20 @@
 (define-command message (channel name &rest text)
   (qsend channel 'lichat-protocol:message :channel name :text (format NIL "~{~a~^ ~}" text)))
 
+(define-command contact (channel &rest users)
+  (unless users
+    (error "I'll need at least one user to contact."))
+  (let ((id (lichat-protocol:id (qsend channel 'lichat-protocol:create))))
+    (with-awaiting (update id (main (client channel)))
+      (typecase update
+        (lichat-protocol:join
+         (dolist (user users)
+           (qsend channel 'lichat-protocol:pull
+                  :channel (lichat-protocol:channel update) :target user)))
+        (lichat-protocol:update-failure
+         (error "Failed to create contact channel: ~a"
+                (lichat-protocol:text update)))))))
+
 (define-command p (channel)
   (prev-channel (main (client channel))))
 
