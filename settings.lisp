@@ -31,7 +31,7 @@
 
 (ubiquitous:define-ubiquitous-reader qobject (form)
   (cond ((string= (first form) "QColor")
-         (q+:make-qcolor (second form)))
+         (second form))
         (T (error "Don't know how to restore qobject ~a." form))))
 
 (defun default-configuration ()
@@ -45,11 +45,13 @@
   (ubiquitous:defaulted-value T :behavior :tray)
   (ubiquitous:defaulted-value T :behavior :notify)
   (ubiquitous:defaulted-value T :behavior :sound)
-  (ubiquitous:defaulted-value (q+:make-qcolor "#EEE") :style :text)
-  (ubiquitous:defaulted-value (q+:make-qcolor "#CCC") :style :time)
-  (ubiquitous:defaulted-value (q+:make-qcolor "#22E") :style :link)
-  (ubiquitous:defaulted-value (q+:make-qcolor "#F00") :style :error)
-  (ubiquitous:defaulted-value (q+:make-qcolor "#0F0") :style :update)
+  (ubiquitous:defaulted-value "" :behaviour :mark)
+  (ubiquitous:defaulted-value (q+:make-qcolor "#EEEEEE") :style :text)
+  (ubiquitous:defaulted-value (q+:make-qcolor "#CCCCCC") :style :time)
+  (ubiquitous:defaulted-value (q+:make-qcolor "#2222EE") :style :link)
+  (ubiquitous:defaulted-value (q+:make-qcolor "#FF0000") :style :error)
+  (ubiquitous:defaulted-value (q+:make-qcolor "#00FF00") :style :update)
+  (ubiquitous:defaulted-value (q+:make-qcolor "#FFFF00") :style :mark)
   (ubiquitous:defaulted-value "h:m:s" :style :format))
 
 (define-widget settings (QDialog)
@@ -124,7 +126,8 @@
 (define-settings behavior-settings
   ((:behavior :tray) qui:boolean :title "Minimize to Tray")
   ((:behavior :notify) qui:boolean :title "Desktop Notifications")
-  ((:behavior :sound) qui:boolean :title "Sound Notifications"))
+  ((:behavior :sound) qui:boolean :title "Sound Notifications")
+  ((:behavior :mark) qui:string :title "Regex to Highlight"))
 
 (define-settings style-settings
   ((:style :text) qui:color :title "Text Colour")
@@ -132,6 +135,7 @@
   ((:style :link) qui:color :title "Link Colour")
   ((:style :error) qui:color :title "Error Colour")
   ((:style :update) qui:color :title "Update Colour")
+  ((:style :mark) qui:color :title "Highlight Colour")
   ((:style :format) qui:string :title "Timestamp Format"))
 
 (define-settings connection-settings

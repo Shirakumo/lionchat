@@ -86,7 +86,10 @@
 (defmethod update ((chat-output chat-output) (null null))
   (q+:clear chat-output)
   (setf (q+:default-style-sheet (q+:document chat-output))
-        (format NIL "a{color:~a} *{white-space:pre-wrap;}" (ubiquitous:value :style :link))))
+        (format NIL "a{color:~a} *{white-space:pre-wrap;} mark{background:~a;color:~a}"
+                (ubiquitous:value :style :link)
+                (ubiquitous:value :style :mark)
+                (invert-color (ubiquitous:value :style :mark)))))
 
 (defmethod update ((chat-output chat-output) (channel channel))
   (update chat-output NIL)
@@ -115,7 +118,7 @@
           (object-color (lichat-protocol:from update))
           (lichat-protocol:from update) (format-name (lichat-protocol:from update))
           (ubiquitous:value :style :text)
-          (linkify-urls (escape-html (lichat-protocol:text update)))))
+          (format-update-text update)))
 
 (defun show-update-info (update stream src msg &rest args)
   (format stream "<span style=\"color:~a\">~a</span> ~

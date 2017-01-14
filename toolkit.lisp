@@ -84,6 +84,16 @@
    text
    "<a href=\"\\1\">\\1</a>"))
 
+(defun regex-escape (text)
+  (cl-ppcre:regex-replace-all
+   "([\\.\\*\\?\\|\\[\\]\\(\\)\\{\\}\\+\\-\\\\])" text "\\\\\\1"))
+
+(defun mark (text regex)
+  (cl-ppcre:regex-replace-all
+   (format NIL "(~a)" regex)
+   text
+   "<mark>\\1</mark>"))
+
 (defun escape-html (html)
   (with-output-to-string (stream)
     (loop for c across html
@@ -95,19 +105,32 @@
                (#\Newline (write-string "<br>" stream))
                (T (write-char c stream))))))
 
+(defun format-update-text (update)
+  (linkify-urls (mark (escape-html (lichat-protocol:text update))
+                      (format NIL "~a|~a"
+                              (regex-escape (username (client update)))
+                              (ubiquitous:value :behavior :mark)))))
+
 (defun object-color (object)
   (let* ((hash (sxhash object))
          (color (logand hash #xFFFFFF))
-         (red (ldb (byte 8 16) color))
-         (green (ldb (byte 8 8) color))
-         (blue (ldb (byte 8 0) color)))
+         (r (ldb (byte 8 16) color))
+         (g (ldb (byte 8 8) color))
+         (b (ldb (byte 8 0) color)))
     ;; Make sure to constrain the range of the colours at least a
     ;; little bit with the hope to avoid making colours that are
     ;; completely unreadable for some backgrounds.
     (format NIL "#~2,'0x~2,'0x~2,'0x"
-            (min 200 (max 50 red))
-            (min 200 (max 50 green))
-            (min 200 (max 50 blue)))))
+            (min 200 (max 50 r))
+            (min 200 (max 50 g))
+            (min 200 (max 50 b)))))
+
+(defun invert-color (name)
+  (let ((r (parse-integer name :start 1 :end 3 :radix 16))
+        (g (parse-integer name :start 3 :end 5 :radix 16))
+        (b (parse-integer name :start 5 :end 7 :radix 16)))
+    (format NIL "#~2,'0x~2,'0x~2,'0x"
+            (- 255 r) (- 255 g) (- 255 b))))
 
 (defun permissions-string (perms)
   (with-output-to-string (out)
