@@ -125,10 +125,12 @@
 
 (defmethod next-channel ((channel-list channel-list))
   (let ((pos (qui:item-position (channel channel-list) (slot-value channel-list 'list))))
-    (setf (channel channel-list)
-          (mod (1+ pos) (length (channels channel-list))))))
+    (when pos
+      (setf (channel channel-list)
+            (mod (1+ pos) (length (channels channel-list)))))))
 
 (defmethod prev-channel ((channel-list channel-list))
   (let ((pos (qui:item-position (channel channel-list) (slot-value channel-list 'list))))
-    (setf (channel channel-list)
-          (mod (1- pos) (length (channels channel-list))))))
+    (when pos
+      (setf (channel channel-list)
+            (mod (1- pos) (length (channels channel-list)))))))
