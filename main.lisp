@@ -188,11 +188,11 @@
 
 (define-menu (main File)
   (:menu connect-menu)
-  (:item "&Disconnect"
+  (:item ("&Disconnect" (ctrl d))
          (when (channel main)
            (close-connection (client (channel main)))))
   (:separator)
-  (:item ("&Settings..." (ctrl p))
+  (:item ("&Settings..." (ctrl s))
          (show-settings main))
   (:item ("&Quit" (ctrl q))
          (q+:close main)

@@ -28,7 +28,8 @@
                (:file "commands")
                (:file "chat-area")
                (:file "tray")
-               (:file "main"))
+               (:file "main")
+               (:file "shortcut"))
   :defsystem-depends-on (:qtools)
   :depends-on (:lichat-tcp-client
                :qtools
