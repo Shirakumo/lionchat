@@ -30,7 +30,8 @@
 
 (define-initializer (channel-list setup)
   (setf (q+:features channel-list) (q+:qdockwidget.dock-widget-movable))
-  (setf (q+:window-title channel-list) "Channels"))
+  (setf (q+:window-title channel-list) "Channels")
+  (setf (q+:object-name channel-list) "channel-list"))
 
 (define-subwidget (channel-list list)
     (make-instance 'qui:listing :draggable NIL

@@ -26,7 +26,8 @@
 
 (define-initializer (user-list setup)
   (setf (q+:features user-list) (q+:qdockwidget.dock-widget-movable))
-  (setf (q+:window-title user-list) "Users"))
+  (setf (q+:window-title user-list) "Users")
+  (setf (q+:object-name user-list) "user-list"))
 
 (define-subwidget (user-list list)
     (make-instance 'qui:listing :draggable NIL

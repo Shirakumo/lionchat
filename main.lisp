@@ -86,11 +86,16 @@
   ;; Autoconnect
   (loop for connection being the hash-values of (ubiquitous:value :connections)
         when (gethash :auto connection)
-        do (apply #'maybe-connect main (alexandria:hash-table-plist connection))))
+        do (apply #'maybe-connect main (alexandria:hash-table-plist connection)))
+  ;; Restore layout
+  (when (ubiquitous:value :layout)
+    (q+:restore-state main (ubiquitous:value :layout))))
 
 (define-finalizer (main teardown)
   (dolist (client (clients main))
-    (close-connection client)))
+    (close-connection client))
+  ;; Save layout
+  (setf (ubiquitous:value :layout) (q+:save-state main)))
 
 (define-subwidget (main channel-list)
     (make-instance 'channel-list :main main)
