@@ -35,6 +35,13 @@
             finally (push (get-output-stream-string buffer) args))
       (nreverse args))))
 
+(defmethod show-update-text (channel type text)
+  (let ((update (make-instance type
+                               :from "Lionchat"
+                               :text text)))
+    (setf (client update) (client channel))
+    (update (main (client channel)) update)))
+
 (defun run-command (channel string)
   (let* ((args (split-command-string string))
          (command (command (first args))))
@@ -48,17 +55,19 @@
                        (rest (trivial-arguments:arglist command)))))
             (error "Unknown command ~a" (first args)))
       (error (err)
-        (update (main (client channel))
-                (make-instance 'lichat-protocol:failure
-                               :from (name (client channel))
-                               :text (princ-to-string err)))))))
+        (show-update-text channel 'lichat-protocol:failure (princ-to-string err))))))
 
 (defmacro define-command (prefix (channel &rest args) &body body)
   `(setf (command ,(string prefix))
          (lambda (,channel ,@args)
            ,@body)))
 
-(define-command create (channel name)
+(define-command help (channel)
+  (show-update-text channel 'lichat-protocol:text-update
+                    (format NIL "The following commands are available: ~{~a~^, ~}"
+                            (list-commands))))
+
+(define-command create (channel &optional name)
   (qsend channel 'lichat-protocol:create :channel name))
 
 (define-command join (channel name)
