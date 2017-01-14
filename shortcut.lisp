@@ -20,3 +20,9 @@
 (define-slot (main prev-channel) ()
   (declare (connected shortcut-prev (activated)))
   (prev-channel main))
+
+(define-slot (main leave-channel) ()
+  (declare (connected shortcut-leave (activated)))
+  (let ((channel (channel main)))
+    (when channel
+      (qsend channel 'lichat-protocol:leave :channel (name channel)))))
