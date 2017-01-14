@@ -7,6 +7,21 @@
 (in-package #:org.shirakumo.lichat.lionchat)
 (in-readtable :qtools)
 
+(defun layout-data ()
+  (let ((file (ubiquitous:designator-pathname 'layout "dat")))
+    (when (probe-file file)
+      (let ((file (q+:make-qfile (uiop:native-namestring file))))
+        (when (q+:open file (q+:qiodevice.read-only))
+          (unwind-protect (q+:read-all file)
+            (q+:close file)))))))
+
+(defun (setf layout-data) (bytes)
+  (let* ((file (ubiquitous:designator-pathname 'layout "dat"))
+         (file (q+:make-qfile (uiop:native-namestring file))))
+    (when (q+:open file (q+:qiodevice.write-only))
+      (unwind-protect (q+:write file bytes)
+        (q+:close file)))))
+
 ;; Handle colours
 (ubiquitous:define-ubiquitous-writer qobject (object)
   (list (qt::qclass-name (qt::qobject-class object))
