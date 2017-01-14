@@ -20,7 +20,7 @@
         (T (error "Don't know how to restore qobject ~a." form))))
 
 (defun default-configuration ()
-  (ubiquitous:restore :lionchat)
+  (ubiquitous:restore 'main)
   (ubiquitous:defaulted-value (make-hash-table :test 'equal) :connections)
   (ubiquitous:defaulted-value "localhost" :connections :default :hostname)
   (ubiquitous:defaulted-value lichat-tcp-client:*default-port* :connections :default :port)
