@@ -103,7 +103,32 @@
 (defmethod channel ((channel-list channel-list))
   (qui:active-item (slot-value channel-list 'list)))
 
-(defmethod (setf channel) (channel (channel-list channel-list))
-  (if channel
-      (setf (qui:active-item (slot-value channel-list 'list)) channel)
-      (setf (channels channel-list) NIL)))
+(defmethod (setf channel) ((channel null) (channel-list channel-list))
+  (setf (channels channel-list) NIL))
+
+(defmethod (setf channel) ((channel channel) (channel-list channel-list))
+  (setf (qui:active-item (slot-value channel-list 'list)) channel))
+
+(defmethod (setf channel) ((channel integer) (channel-list channel-list))
+  (setf (channel (main channel-list))
+        (find-channel channel channel-list)))
+
+(defmethod (setf channel) ((channel string) (channel-list channel-list))
+  (setf (channel (main channel-list))
+        (find-channel channel channel-list)))
+
+(defmethod find-channel ((name string) (channel-list channel-list))
+  (qui:find-item name (slot-value channel-list 'list) :key #'name :test #'string-equal))
+
+(defmethod find-channel ((index integer) (channel-list channel-list))
+  (qui:item-at index (slot-value channel-list 'list)))
+
+(defmethod next-channel ((channel-list channel-list))
+  (let ((pos (qui:item-position (channel channel-list) (slot-value channel-list 'list))))
+    (setf (channel channel-list)
+          (mod (1+ pos) (length (channels channel-list))))))
+
+(defmethod prev-channel ((channel-list channel-list))
+  (let ((pos (qui:item-position (channel channel-list) (slot-value channel-list 'list))))
+    (setf (channel channel-list)
+          (mod (1- pos) (length (channels channel-list))))))

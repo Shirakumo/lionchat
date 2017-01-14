@@ -19,10 +19,24 @@
 (defmethod channel ((main main))
   (channel (slot-value main 'chat-area)))
 
-(defmethod (setf channel) (channel (main main))
+(defmethod (setf channel) ((channel channel) (main main))
   (setf (channel (slot-value main 'channel-list)) channel)
   (setf (channel (slot-value main 'chat-area)) channel)
   (setf (channel (slot-value main 'user-list)) channel))
+
+(defmethod (setf channel) ((channel null) (main main))
+  (setf (channel (slot-value main 'channel-list)) channel)
+  (setf (channel (slot-value main 'chat-area)) channel)
+  (setf (channel (slot-value main 'user-list)) channel))
+
+(defmethod (setf channel) (channel (main main))
+  (setf (channel (slot-value main 'channel-list)) channel))
+
+(defmethod prev-channel ((main main))
+  (prev-channel (slot-value main 'channel-list)))
+
+(defmethod next-channel ((main main))
+  (next-channel (slot-value main 'channel-list)))
 
 (defmethod (setf clients) :after (clients (main main))
   (let ((menu (slot-value main 'clients-menu)))
@@ -81,13 +95,11 @@
   (unless (ubiquitous:value :setup)
     (show-settings main :tab "Connections")
     (setf (ubiquitous:value :setup) T))
-  ;; Populate menu
+  ;; Init
   (update-connect-menu main)
-  ;; Autoconnect
   (loop for connection being the hash-values of (ubiquitous:value :connections)
         when (gethash :auto connection)
         do (apply #'maybe-connect main (alexandria:hash-table-plist connection)))
-  ;; Restore layout
   (let ((layout (layout-data)))
     (when layout (q+:restore-state main layout))))
 

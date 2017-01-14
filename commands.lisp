@@ -84,3 +84,14 @@
 
 (define-command message (channel name &rest text)
   (qsend channel 'lichat-protocol:message :channel name :text (format NIL "~{~a~^ ~}" text)))
+
+(define-command p (channel)
+  (prev-channel (main (client channel))))
+
+(define-command n (channel)
+  (next-channel (main (client channel))))
+
+(define-command c (channel name/index)
+  (setf (channel (main (client channel)))
+        (or (ignore-errors (parse-integer name/index))
+            name/index)))
