@@ -27,6 +27,7 @@
                (:file "channel-list")
                (:file "commands")
                (:file "chat-area")
+               (:file "repl")
                (:file "tray")
                (:file "main")
                (:file "shortcut"))
@@ -39,6 +40,7 @@
                :qtools-ui-listing
                :qtools-ui-options
                :qtools-ui-notification
+               :qtools-ui-repl
                :alexandria
                :bordeaux-threads
                :documentation-utils
