@@ -246,4 +246,4 @@ Version: ~a"
              (q+:qfontdatabase-add-application-font (uiop:native-namestring (data "noto-emoji.ttf")))
              (q+:qapplication-set-quit-on-last-window-closed NIL)
              (make-instance 'main)))
-      (with-main-window (main #'inner-start)))))
+      (with-main-window (main #'inner-start :on-error (if *deployed* #'abort #'invoke-debugger))))))
