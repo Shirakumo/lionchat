@@ -71,21 +71,22 @@
 (define-slot (user-item show-menu) ((pos "const QPoint&"))
   (declare (connected user-item (custom-context-menu-requested "const QPoint&")))
   (with-finalizing ((pos (q+:map-to-global user-item pos)))
-    (let ((selected (q+:exec menu pos))
-          (user (qui:widget-item user-item)))
+    (let* ((selected (q+:exec menu pos))
+           (user (qui:widget-item user-item))
+           (main (main (client user))))
       (cond ((null-qobject-p selected))
             ((string= "Information" (q+:text selected))
              (qsend user 'lichat-protocol:user-info
                     :target (name user)))
             ((string= "Kick" (q+:text selected))
              (qsend user 'lichat-protocol:kick
-                    :channel (name (channel *main*)) :target (name user)))
+                    :channel (name (channel main)) :target (name user)))
             ((string= "Un/Mute" (q+:text selected))
              (setf (muted-p user) (not (muted-p user)))
              (setf (q+:text type) (label user)))
             ((string= "Contact" (q+:text selected))
              (let ((id (lichat-protocol:id (qsend user 'lichat-protocol:create :channel NIL))))
-               (with-awaiting (update id *main*)
+               (with-awaiting (update id main)
                  (typecase update
                    (lichat-protocol:join
                     (qsend user 'lichat-protocol:pull

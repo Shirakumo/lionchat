@@ -71,7 +71,8 @@
 
 (defmethod qui:drag-start ((channel-item channel-item) x y)
   (declare (ignore x y))
-  (setf (channel *main*) (qui:widget-item channel-item)))
+  (setf (channel (main (client (qui:widget-item channel-item))))
+        (qui:widget-item channel-item)))
 
 (define-subwidget (channel-item name) (q+:make-qlabel)
   (let ((channel (qui:widget-item channel-item)))
