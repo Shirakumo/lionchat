@@ -146,6 +146,10 @@
          (error "Failed to create contact channel: ~a"
                 (lichat-protocol:text update)))))))
 
+(define-command register (channel password)
+  "Set your account password."
+  (qsend channel 'lichat-protocol:register :password password))
+
 (define-command p (channel)
   "Switch to the next channel in the list."
   (prev-channel (main (client channel))))
