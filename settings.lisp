@@ -229,5 +229,10 @@
 
 (defmethod save ((settings connections-settings))
   (with-slots-bound (settings connections-settings)
-    (mapc #'save connections))
+    (mapc #'save connections)
+    (loop for connection being the hash-values of (ubiquitous:value :connections)
+          for name = (gethash :name connection)
+          when (and (stringp name) (not (find name connections
+                                              :key (lambda (A) (slot-value a 'name)))))
+          do (ubiquitous:remvalue :connections name)))
   settings)
