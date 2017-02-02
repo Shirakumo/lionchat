@@ -141,6 +141,9 @@
   (show-update-action update stream "is ~:[not registered~;registered~] and has ~d connection~:p"
                       (lichat-protocol:registered update) (lichat-protocol:connections update)))
 
+(defmethod show-update ((update lichat-protocol:register) (stream stream))
+  (show-update-action update stream "'s password has been updated."))
+
 (defmethod show-update ((update lichat-protocol:join) (stream stream))
   (show-update-action update stream "joined"))
 
@@ -182,12 +185,36 @@
   (q+:ensure-cursor-visible chat-output))
 
 (define-widget chat-input (QPlainTextEdit)
-  ())
+  ((complete-prefix :initform NIL)
+   (complete-pretext :initform NIL)
+   (complete-index :initform 0)))
 
 (define-signal (chat-input confirmed) ())
+(define-signal (chat-input autocomplete) ())
 
 (define-override (chat-input key-press-event) (ev)
-  (when (and (enum-equal (q+:key ev) (q+:qt.key_return))
-             (enum-equal (q+:modifiers ev) (q+:qt.control-modifier)))
-    (signal! chat-input (confirmed)))
-  (stop-overriding))
+  (cond ((enum-equal (q+:key ev) (q+:qt.key_tab))
+         (let ((text (q+:to-plain-text chat-input))
+               (users (mapcar #'name (users (channel *main*)))))
+           (unless complete-prefix
+             (setf complete-index 0)
+             (setf complete-prefix (aref (nth-value 1 (cl-ppcre:scan-to-strings "(?:^| )([^ ]*)$" text)) 0))
+             (setf complete-pretext (subseq text 0 (- (length text) (length complete-prefix)))))
+           (setf users (sort (remove-if-not (lambda (user) (search complete-prefix user :test #'char-equal))
+                                            users)
+                             #'string<))
+           (setf (q+:plain-text chat-input) (format NIL "~a~a~:[ ~;: ~]"
+                                                    complete-pretext (elt users complete-index) (string= complete-pretext "")))
+           (q+:move-cursor chat-input (q+:qtextcursor.end))
+           (setf complete-index (mod (1+ complete-index) (length users)))))
+        ((and (enum-equal (q+:key ev) (q+:qt.key_return))
+              (enum-equal (q+:modifiers ev) (q+:qt.no-modifier)))
+         (setf complete-prefix NIL)
+         (signal! chat-input (confirmed))
+         (q+:ignore ev))
+        ((enum-equal (q+:key ev) (q+:qt.key_return))
+         (setf (q+:plain-text chat-input) (format NIL "~a~%" (q+:to-plain-text chat-input)))
+         (q+:move-cursor chat-input (q+:qtextcursor.end)))
+        (T
+         (setf complete-prefix NIL)
+         (stop-overriding))))
