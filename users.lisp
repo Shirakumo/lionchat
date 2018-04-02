@@ -7,6 +7,6 @@
 (in-package #:org.shirakumo.lionchat)
 (in-readtable :qtools)
 
-(define-widget users (QDockWidget dockable)
+(define-consumer-widget users (QDockWidget dockable)
   ()
   (:default-initargs :title "Users"))

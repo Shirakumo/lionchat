@@ -14,7 +14,10 @@
   :serial T
   :components ((:file "package")
                (:file "fa-name-map")
+               (:file "consumer-widget")
+               (:file "client")
                (:file "buffer")
+               (:file "controller")
                (:file "toolbar")
                (:file "dockable")
                (:file "output")
@@ -26,6 +29,7 @@
   :depends-on (:qtools
                :qtcore
                :qtgui
+               :qtools-ui-listing
                :maiden
                :maiden-client-entities
                :maiden-irc

@@ -15,14 +15,16 @@
   (dolist (font (directory (make-pathname :name :wild :type "ttf" :defaults (asdf:system-relative-pathname :lionchat "data/"))))
     (q+:qfontdatabase-add-application-font (uiop:native-namestring font)))
   (setf (q+:dock-options chat) (logior (q+:qmainwindow.allow-tabbed-docks)
-                                       (q+:qmainwindow.allow-nested-docks))))
+                                       (q+:qmainwindow.allow-nested-docks)))
+  (maiden:add-consumer (make-instance 'controller :chat chat) chat)
+  (maiden:add-consumer (make-instance 'lichat-client :host "irc.tymoon.eu" :username "Lion") chat)
+  (maiden:start chat))
 
 (define-finalizer (chat teardown)
+  (maiden:stop chat)
   (q+:qfontdatabase-remove-all-application-fonts))
 
-(define-subwidget (chat output) (make-instance 'output)
-  (setf (buffer output) (make-instance 'buffer :items (list (make-instance 'message :data "This is a really long line with a lot of text to test the word wrapping and such things.")
-                                                            (make-instance 'message :data "Hi")))))
+(define-subwidget (chat output) (make-instance 'output))
 
 (define-subwidget (chat input) (make-instance 'input))
 
@@ -36,10 +38,12 @@
   (setf (q+:sizes center) (list 1 100)))
 
 (define-subwidget (chat channels) (make-instance 'channels)
-  (q+:add-dock-widget chat (q+:qt.right-dock-widget-area) channels))
+  (q+:add-dock-widget chat (q+:qt.right-dock-widget-area) channels)
+  (maiden:add-consumer channels chat))
 
 (define-subwidget (chat users) (make-instance 'users)
-  (q+:add-dock-widget chat (q+:qt.right-dock-widget-area) users))
+  (q+:add-dock-widget chat (q+:qt.right-dock-widget-area) users)
+  (maiden:add-consumer users chat))
 
 (define-menu (chat file)
   (:item "Quit" (q+:close chat)))

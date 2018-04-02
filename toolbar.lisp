@@ -20,6 +20,7 @@
 
 (defmethod (setf icon) (icon (button toolbar-button))
   (setf (q+:text button) (etypecase icon
+                           (null (name->icon :question))
                            (keyword (name->icon icon))
                            (character (string icon))
                            (string icon))))

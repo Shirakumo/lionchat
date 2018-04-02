@@ -8,7 +8,9 @@
 (in-readtable :qtools)
 
 (defclass buffer ()
-  ((items :initform (make-array 0 :adjustable T :fill-pointer T) :reader items)))
+  ((name :initarg :name :accessor name)
+   (items :initform (make-array 0 :adjustable T :fill-pointer T) :reader items))
+  (:default-initargs :name (error "NAME required.")))
 
 (defmethod initialize-instance :after ((buffer buffer) &key items)
   (let ((len (length items)))
