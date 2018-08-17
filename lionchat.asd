@@ -10,7 +10,9 @@
   :author "Nicolas Hafner <shinmera@tymoon.eu>"
   :maintainer "Nicolas Hafner <shinmera@tymoon.eu>"
   :description "A GUI client for the Lichat protocol"
-  :homepage "https://github.com/Shinmera/lionchat"
+  :homepage "https://Shinmera.github.io/lionchat/"
+  :bug-tracker "https://github.com/Shinmera/lionchat/issues"
+  :source-control (:git "https://github.com/Shinmera/lionchat.git")
   :build-operation "qt-program-op"
   :build-pathname "lionchat"
   :entry-point "lionchat:start"
