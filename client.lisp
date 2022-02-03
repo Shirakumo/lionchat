@@ -8,7 +8,7 @@
 (in-readtable :qtools)
 
 ;; Redef to add client slot
-(lichat-protocol:define-protocol-class lichat-protocol:wire-object ()
+(lichat-protocol:define-protocol-class lichat-protocol:object ()
   ((client :initform NIL :accessor client :slot-type (or null client))))
 
 (defclass remove-client ()
@@ -71,7 +71,7 @@
 (defmethod (setf find-channel) (value name (client client))
   (setf-named (channels client) name value))
 
-(defmethod process :before ((update lichat-protocol:wire-object) (client client))
+(defmethod process :before ((update lichat-protocol:object) (client client))
   (setf (client update) client))
 
 (defmethod process ((update lichat-protocol:connect) (client client))
