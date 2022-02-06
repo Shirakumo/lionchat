@@ -8,8 +8,8 @@
 (in-readtable :qtools)
 
 ;; Redef to add client slot
-(lichat-protocol:define-protocol-class lichat-protocol:object ()
-  ((client :initform NIL :accessor client :slot-type (or null client))))
+(defclass lichat-protocol:object ()
+  ((client :initform NIL :accessor client)))
 
 (defclass remove-client ()
   ((client :initarg :client :accessor client)))
